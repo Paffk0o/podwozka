@@ -133,12 +133,12 @@ jobs:
       - name: Brak SONAR_TOKEN
         if: env.SONAR_TOKEN == ''
         run: echo "::warning::Ustaw sekret SONAR_TOKEN (Settings → Secrets → Actions), żeby włączyć Quality Gate."
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         if: env.SONAR_TOKEN != ''
         with:
           name: coverage-backend
           path: backend
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         if: env.SONAR_TOKEN != ''
         with:
           name: coverage-mobile
