@@ -1,0 +1,67 @@
+[project]
+name = "podwozka-backend"
+version = "0.1.0"
+description = "Podwózka — backend (FastAPI, modularny monolit)"
+requires-python = ">=3.14,<3.16"
+dependencies = [
+    "fastapi[standard-no-fastapi-cloud-cli]>=0.143,<0.144",
+    "pydantic>=2.14,<3",
+    "pydantic-settings>=2.15,<3",
+    "sqlalchemy[asyncio]>=2.1.4,<2.2",
+    "asyncpg>=0.32,<0.33",
+    "geoalchemy2>=0.20,<0.21",
+    "alembic>=1.20,<2",
+    "pyjwt[crypto]>=2.15,<3",
+    "httpx>=0.28,<0.29",
+    "redis>=8.1,<9",
+    "sentry-sdk[fastapi]>=2.71,<3",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1,<10",
+    "pytest-cov>=7.1,<8",
+    "pytest-asyncio>=1.4,<2",
+    "ruff>=0.17,<0.18",
+    "mypy>=2.4,<3",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+extend-exclude = ["migrations/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "ASYNC", "SIM", "RUF"]
+ignore = ["B008"]  # FastAPI Depends() in defaults
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"]
+"tests/conftest.py" = ["E402", "S101"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+plugins = ["pydantic.mypy"]
+exclude = ["migrations/"]
+
+[[tool.mypy.overrides]]
+module = ["geoalchemy2.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+addopts = "-ra"
+
+[tool.coverage.run]
+source = ["app"]
+branch = true
+
+[tool.coverage.report]
+skip_empty = true

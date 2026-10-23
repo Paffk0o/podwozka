@@ -1,0 +1,11 @@
+# PLACEHOLDER — ten pakiet jest GENEROWANY z openapi/openapi.json.
+# Uruchom z katalogu głównego repo: ./scripts/gen-api-client.sh
+# Generator nadpisze ten plik (zachowując `resolution: workspace`).
+name: podwozka_api
+description: Klient API Podwózki (generowany przez openapi-generator, dart-dio).
+version: 1.0.0
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0

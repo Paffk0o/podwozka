@@ -1,0 +1,15 @@
+name: podwozka_workspace
+description: Pub workspace dla aplikacji Podwózka (Pasażer, Kierowca, panel admina).
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+# Każdy pakiet z tej listy ma w swoim pubspec.yaml `resolution: workspace`.
+# `flutter pub get` uruchamiamy w katalogu mobile/ (jedna rozdzielczość zależności dla wszystkich).
+workspace:
+  - packages/api_client
+  - packages/core
+  - apps/passenger
+  - apps/driver
+  # - apps/admin_web   (dodaje Agent DevOps)

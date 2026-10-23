@@ -1,0 +1,4237 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Podwózka API",
+    "description": "Kontrakt v1. Kwoty w groszach. Autoryzacja: Bearer token z Keycloaka.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Healthcheck",
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/config": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Publiczna konfiguracja aplikacji",
+        "operationId": "get_public_config",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicConfig"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me": {
+      "get": {
+        "tags": [
+          "me"
+        ],
+        "summary": "Mój profil",
+        "operationId": "get_me",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Profil nie istnieje — wywołaj PUT /me po pierwszym logowaniu"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "me"
+        ],
+        "summary": "Utwórz lub zaktualizuj mój profil",
+        "operationId": "upsert_me",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MeUpsert"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "me"
+        ],
+        "summary": "Usuń konto (Keycloak + anonimizacja danych)",
+        "operationId": "delete_me",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/me/phone/verification": {
+      "post": {
+        "tags": [
+          "me"
+        ],
+        "summary": "Wyślij kod SMS na numer telefonu",
+        "operationId": "request_phone_verification",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhoneVerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/me/phone/verification/confirm": {
+      "post": {
+        "tags": [
+          "me"
+        ],
+        "summary": "Potwierdź numer kodem z SMS",
+        "operationId": "confirm_phone_verification",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhoneVerificationConfirm"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/me/device-tokens": {
+      "put": {
+        "tags": [
+          "me"
+        ],
+        "summary": "Zarejestruj token push (FCM) urządzenia",
+        "operationId": "register_device_token",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceTokenIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/regions": {
+      "get": {
+        "tags": [
+          "regions"
+        ],
+        "summary": "Aktywne regiony (gminy)",
+        "operationId": "list_regions",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Region"
+                  },
+                  "type": "array",
+                  "title": "Response List Regions"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/places/autocomplete": {
+      "get": {
+        "tags": [
+          "places"
+        ],
+        "summary": "Podpowiedzi adresów",
+        "operationId": "autocomplete_places",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 64,
+              "description": "Token sesji autouzupełniania (UUID z aplikacji, jeden na wyszukiwanie)",
+              "title": "Session Token"
+            },
+            "description": "Token sesji autouzupełniania (UUID z aplikacji, jeden na wyszukiwanie)"
+          },
+          {
+            "name": "input",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 200,
+              "title": "Input"
+            }
+          },
+          {
+            "name": "lat",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 90,
+              "minimum": -90,
+              "nullable": true,
+              "title": "Lat"
+            }
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 180,
+              "minimum": -180,
+              "nullable": true,
+              "title": "Lng"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlaceSuggestion"
+                  },
+                  "title": "Response Autocomplete Places"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/places/reverse": {
+      "get": {
+        "tags": [
+          "places"
+        ],
+        "summary": "Adres dla punktu na mapie",
+        "operationId": "reverse_geocode",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "lat",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "maximum": 90,
+              "minimum": -90,
+              "title": "Lat"
+            }
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "maximum": 180,
+              "minimum": -180,
+              "title": "Lng"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Place"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/places/{place_id}": {
+      "get": {
+        "tags": [
+          "places"
+        ],
+        "summary": "Szczegóły podpowiedzi (współrzędne)",
+        "operationId": "get_place",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "place_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Place Id"
+            }
+          },
+          {
+            "name": "session_token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 64,
+              "description": "Token sesji autouzupełniania (UUID z aplikacji, jeden na wyszukiwanie)",
+              "title": "Session Token"
+            },
+            "description": "Token sesji autouzupełniania (UUID z aplikacji, jeden na wyszukiwanie)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Place"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quotes": {
+      "post": {
+        "tags": [
+          "quotes"
+        ],
+        "summary": "Wycena kursu (cena z góry)",
+        "operationId": "create_quote",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quote"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Punkt odbioru poza obsługiwanymi regionami"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/rides": {
+      "post": {
+        "tags": [
+          "rides"
+        ],
+        "summary": "Zamów kurs na podstawie wyceny",
+        "operationId": "create_ride",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RideCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RideCreated"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "409": {
+            "description": "Wycena wygasła albo pasażer ma już aktywny kurs"
+          },
+          "422": {
+            "description": "Numer telefonu niezweryfikowany"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "rides"
+        ],
+        "summary": "Moje kursy (najnowsze pierwsze)",
+        "operationId": "list_my_rides",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "nullable": true,
+              "description": "Tylko aktywne / tylko zakończone",
+              "title": "Active"
+            },
+            "description": "Tylko aktywne / tylko zakończone"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RidePage"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rides/{ride_id}": {
+      "get": {
+        "tags": [
+          "rides"
+        ],
+        "summary": "Szczegóły kursu",
+        "operationId": "get_my_ride",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ride_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ride Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ride"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rides/{ride_id}/cancel": {
+      "post": {
+        "tags": [
+          "rides"
+        ],
+        "summary": "Anuluj kurs (pasażer)",
+        "operationId": "cancel_my_ride",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ride_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ride Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ride"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "409": {
+            "description": "Kursu nie można już anulować"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rides/{ride_id}/rating": {
+      "post": {
+        "tags": [
+          "rides"
+        ],
+        "summary": "Oceń kierowcę",
+        "operationId": "rate_driver",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ride_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ride Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RatingCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "409": {
+            "description": "Kurs niezakończony lub już oceniony"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/drivers/me": {
+      "get": {
+        "tags": [
+          "driver"
+        ],
+        "summary": "Mój profil kierowcy / status wniosku",
+        "operationId": "get_my_driver_profile",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriverProfile"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "404": {
+            "description": "Brak wniosku"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/drivers/me/application": {
+      "put": {
+        "tags": [
+          "driver"
+        ],
+        "summary": "Utwórz / popraw wniosek kierowcy (region, pojazd)",
+        "operationId": "upsert_driver_application",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DriverApplicationUpsert"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriverProfile"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/drivers/me/documents": {
+      "post": {
+        "tags": [
+          "driver"
+        ],
+        "summary": "Poproś o link do wysłania dokumentu (Azure Blob SAS)",
+        "operationId": "create_document_upload",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentUploadRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentUploadSlot"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/drivers/me/documents/{document_id}/complete": {
+      "post": {
+        "tags": [
+          "driver"
+        ],
+        "summary": "Potwierdź, że plik został wysłany",
+        "operationId": "complete_document_upload",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriverDocument"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/drivers/me/application/submit": {
+      "post": {
+        "tags": [
+          "driver"
+        ],
+        "summary": "Wyślij wniosek do weryfikacji",
+        "operationId": "submit_driver_application",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriverProfile"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Brakuje wymaganych dokumentów"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/drivers/me/current": {
+      "get": {
+        "tags": [
+          "driver"
+        ],
+        "summary": "Bieżący stan kierowcy (oferta, aktywny kurs)",
+        "operationId": "get_driver_current_state",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriverCurrentState"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/drivers/me/availability": {
+      "put": {
+        "tags": [
+          "driver"
+        ],
+        "summary": "Przejdź online / offline",
+        "operationId": "set_driver_availability",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AvailabilityUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriverProfile"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/drivers/me/offers/{offer_id}/accept": {
+      "post": {
+        "tags": [
+          "driver"
+        ],
+        "summary": "Przyjmij ofertę kursu",
+        "operationId": "accept_offer",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "offer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Offer Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ride"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "409": {
+            "description": "Oferta wygasła lub przyjęta przez innego"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/drivers/me/offers/{offer_id}/decline": {
+      "post": {
+        "tags": [
+          "driver"
+        ],
+        "summary": "Odrzuć ofertę kursu",
+        "operationId": "decline_offer",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "offer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Offer Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/drivers/me/scheduled-board": {
+      "get": {
+        "tags": [
+          "driver"
+        ],
+        "summary": "Giełda rezerwacji w moim regionie (nieprzypisane)",
+        "operationId": "list_scheduled_board",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Ride"
+                  },
+                  "type": "array",
+                  "title": "Response List Scheduled Board"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/drivers/me/scheduled-board/{ride_id}/claim": {
+      "post": {
+        "tags": [
+          "driver"
+        ],
+        "summary": "Weź rezerwację z giełdy",
+        "operationId": "claim_scheduled_ride",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ride_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ride Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ride"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "409": {
+            "description": "Niedozwolone przejście statusu / zasób zajęty"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/drivers/me/rides": {
+      "get": {
+        "tags": [
+          "driver"
+        ],
+        "summary": "Moje kursy jako kierowca (aktywne, zaplanowane, historia)",
+        "operationId": "list_driver_rides",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "nullable": true,
+              "title": "Active"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RidePage"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/drivers/me/rides/{ride_id}/actions": {
+      "post": {
+        "tags": [
+          "driver"
+        ],
+        "summary": "Zmień status kursu (wyjazd, na miejscu, start, koniec)",
+        "operationId": "perform_ride_action",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ride_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ride Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DriverRideActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ride"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "409": {
+            "description": "Niedozwolone przejście statusu / zasób zajęty"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/drivers/me/rides/{ride_id}/cash-collected": {
+      "post": {
+        "tags": [
+          "driver"
+        ],
+        "summary": "Potwierdź przyjęcie gotówki",
+        "operationId": "confirm_cash_collected",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ride_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ride Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ride"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "409": {
+            "description": "Niedozwolone przejście statusu / zasób zajęty"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/drivers/me/rides/{ride_id}/cancel": {
+      "post": {
+        "tags": [
+          "driver"
+        ],
+        "summary": "Anuluj kurs (kierowca)",
+        "operationId": "cancel_driver_ride",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ride_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ride Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ride"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "409": {
+            "description": "Niedozwolone przejście statusu / zasób zajęty"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/drivers/me/rides/{ride_id}/rating": {
+      "post": {
+        "tags": [
+          "driver"
+        ],
+        "summary": "Oceń pasażera",
+        "operationId": "rate_passenger",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "ride_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ride Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RatingCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "409": {
+            "description": "Niedozwolone przejście statusu / zasób zajęty"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/drivers/me/earnings": {
+      "get": {
+        "tags": [
+          "driver"
+        ],
+        "summary": "Zarobki w okresie",
+        "operationId": "get_driver_earnings",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Date From"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Date To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EarningsSummary"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/drivers": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Kierowcy / wnioski",
+        "operationId": "admin_list_drivers",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/DriverStatus"
+                }
+              ],
+              "nullable": true,
+              "title": "Status"
+            }
+          },
+          {
+            "name": "region_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true,
+              "title": "Region Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDriverPage"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/drivers/{user_id}": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Szczegóły kierowcy",
+        "operationId": "admin_get_driver",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDriver"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/drivers/{user_id}/documents/{document_id}/view-url": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Krótkotrwały link do podglądu dokumentu",
+        "operationId": "admin_get_document_url",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignedUrl"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/drivers/{user_id}/approve": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Zatwierdź kierowcę (nadaje rolę driver w Keycloaku)",
+        "operationId": "admin_approve_driver",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDriver"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/drivers/{user_id}/reject": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Odrzuć wniosek",
+        "operationId": "admin_reject_driver",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDriver"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/drivers/{user_id}/suspend": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Zawieś kierowcę",
+        "operationId": "admin_suspend_driver",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDriver"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/regions": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Wszystkie regiony",
+        "operationId": "admin_list_regions",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RegionDetail"
+                  },
+                  "type": "array",
+                  "title": "Response Admin List Regions"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Dodaj region (granica GeoJSON)",
+        "operationId": "admin_create_region",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegionDetail"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/regions/{region_id}": {
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Edytuj region",
+        "operationId": "admin_update_region",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "region_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Region Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegionUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegionDetail"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/regions/{region_id}/tariffs": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Historia cenników regionu (najnowszy pierwszy)",
+        "operationId": "admin_list_tariffs",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "region_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Region Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tariff"
+                  },
+                  "title": "Response Admin List Tariffs"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Nowa wersja cennika (zamyka poprzednią)",
+        "operationId": "admin_create_tariff",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "region_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Region Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TariffCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tariff"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/rides": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Kursy (filtry)",
+        "operationId": "admin_list_rides",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "region_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true,
+              "title": "Region Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/RideStatus"
+                }
+              ],
+              "nullable": true,
+              "title": "Status"
+            }
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true,
+              "title": "Date From"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true,
+              "title": "Date To"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RidePage"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payments/stripe/webhook": {
+      "post": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "Webhook Stripe (bez autoryzacji JWT, weryfikacja podpisu)",
+        "operationId": "stripe_webhook",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "501": {
+            "description": "Jeszcze nie zaimplementowane"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AdminDriver": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DriverStatus"
+          },
+          "region_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Region Id"
+          },
+          "vehicle": {
+            "$ref": "#/components/schemas/Vehicle"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/DriverDocument"
+            },
+            "type": "array",
+            "title": "Documents"
+          },
+          "rejection_reason": {
+            "type": "string",
+            "nullable": true,
+            "title": "Rejection Reason"
+          },
+          "rating_avg": {
+            "type": "number",
+            "nullable": true,
+            "title": "Rating Avg"
+          },
+          "online": {
+            "type": "boolean",
+            "title": "Online"
+          },
+          "approved_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "title": "Approved At"
+          },
+          "full_name": {
+            "type": "string",
+            "nullable": true,
+            "title": "Full Name"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "title": "Email"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "title": "Phone"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "title": "Submitted At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "status",
+          "region_id",
+          "vehicle",
+          "documents",
+          "rejection_reason",
+          "rating_avg",
+          "online",
+          "approved_at",
+          "full_name",
+          "email",
+          "phone",
+          "submitted_at"
+        ],
+        "title": "AdminDriver"
+      },
+      "AdminDriverPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AdminDriver"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "AdminDriverPage"
+      },
+      "AvailabilityUpdate": {
+        "properties": {
+          "online": {
+            "type": "boolean",
+            "title": "Online"
+          }
+        },
+        "type": "object",
+        "required": [
+          "online"
+        ],
+        "title": "AvailabilityUpdate"
+      },
+      "CancelRequest": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 300,
+            "nullable": true,
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "title": "CancelRequest"
+      },
+      "DevicePlatform": {
+        "type": "string",
+        "enum": [
+          "android",
+          "ios",
+          "web"
+        ],
+        "title": "DevicePlatform"
+      },
+      "DeviceTokenIn": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 4096,
+            "minLength": 10,
+            "title": "Token",
+            "description": "Token FCM"
+          },
+          "platform": {
+            "$ref": "#/components/schemas/DevicePlatform"
+          },
+          "app": {
+            "type": "string",
+            "pattern": "^(passenger|driver|admin)$",
+            "title": "App",
+            "description": "Która aplikacja"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token",
+          "platform",
+          "app"
+        ],
+        "title": "DeviceTokenIn"
+      },
+      "DocumentStatus": {
+        "type": "string",
+        "enum": [
+          "awaiting_upload",
+          "uploaded",
+          "accepted",
+          "rejected"
+        ],
+        "title": "DocumentStatus"
+      },
+      "DocumentType": {
+        "type": "string",
+        "enum": [
+          "driving_license",
+          "vehicle_registration",
+          "insurance_oc",
+          "driver_photo"
+        ],
+        "title": "DocumentType"
+      },
+      "DocumentUploadRequest": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/DocumentType"
+          },
+          "content_type": {
+            "type": "string",
+            "pattern": "^(image/jpeg|image/png|image/heic|application/pdf)$",
+            "title": "Content Type"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "maximum": 10485760.0,
+            "exclusiveMinimum": true,
+            "title": "Size Bytes",
+            "description": "Maks. 10 MB",
+            "minimum": 0.0
+          },
+          "expires_on": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "title": "Expires On",
+            "description": "Data ważności dokumentu"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "content_type",
+          "size_bytes"
+        ],
+        "title": "DocumentUploadRequest"
+      },
+      "DocumentUploadSlot": {
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          },
+          "upload_url": {
+            "type": "string",
+            "title": "Upload Url"
+          },
+          "required_headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Required Headers",
+            "description": "Np. {\"x-ms-blob-type\": \"BlockBlob\", \"Content-Type\": \"image/jpeg\"}"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_id",
+          "upload_url",
+          "required_headers",
+          "expires_at"
+        ],
+        "title": "DocumentUploadSlot",
+        "description": "Upload the file with `PUT upload_url` (body = file bytes) and `required_headers`,\nthen call `POST /drivers/me/documents/{document_id}/complete`."
+      },
+      "DriverApplicationUpsert": {
+        "properties": {
+          "region_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Region Id"
+          },
+          "vehicle": {
+            "$ref": "#/components/schemas/Vehicle"
+          }
+        },
+        "type": "object",
+        "required": [
+          "region_id",
+          "vehicle"
+        ],
+        "title": "DriverApplicationUpsert"
+      },
+      "DriverCurrentState": {
+        "properties": {
+          "profile": {
+            "$ref": "#/components/schemas/DriverProfile"
+          },
+          "pending_offer": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RideOffer"
+              }
+            ],
+            "nullable": true
+          },
+          "active_ride": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Ride"
+              }
+            ],
+            "nullable": true
+          },
+          "next_scheduled_ride": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Ride"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "profile",
+          "pending_offer",
+          "active_ride",
+          "next_scheduled_ride"
+        ],
+        "title": "DriverCurrentState",
+        "description": "Used after app (re)start to restore the screen; live updates come via WebSocket."
+      },
+      "DriverDocument": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "type": {
+            "$ref": "#/components/schemas/DocumentType"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DocumentStatus"
+          },
+          "content_type": {
+            "type": "string",
+            "title": "Content Type"
+          },
+          "expires_on": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "title": "Expires On"
+          },
+          "uploaded_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "title": "Uploaded At"
+          },
+          "review_comment": {
+            "type": "string",
+            "nullable": true,
+            "title": "Review Comment"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "status",
+          "content_type",
+          "expires_on",
+          "uploaded_at",
+          "review_comment"
+        ],
+        "title": "DriverDocument"
+      },
+      "DriverProfile": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DriverStatus"
+          },
+          "region_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Region Id"
+          },
+          "vehicle": {
+            "$ref": "#/components/schemas/Vehicle"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/DriverDocument"
+            },
+            "type": "array",
+            "title": "Documents"
+          },
+          "rejection_reason": {
+            "type": "string",
+            "nullable": true,
+            "title": "Rejection Reason"
+          },
+          "rating_avg": {
+            "type": "number",
+            "nullable": true,
+            "title": "Rating Avg"
+          },
+          "online": {
+            "type": "boolean",
+            "title": "Online"
+          },
+          "approved_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "title": "Approved At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "status",
+          "region_id",
+          "vehicle",
+          "documents",
+          "rejection_reason",
+          "rating_avg",
+          "online",
+          "approved_at"
+        ],
+        "title": "DriverProfile"
+      },
+      "DriverRideAction": {
+        "type": "string",
+        "enum": [
+          "depart",
+          "arrived",
+          "start",
+          "complete"
+        ],
+        "title": "DriverRideAction"
+      },
+      "DriverRideActionRequest": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/DriverRideAction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "title": "DriverRideActionRequest"
+      },
+      "DriverStatus": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "pending",
+          "approved",
+          "rejected",
+          "suspended"
+        ],
+        "title": "DriverStatus"
+      },
+      "EarningEntry": {
+        "properties": {
+          "ride_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Ride Id"
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Completed At"
+          },
+          "payment_method": {
+            "$ref": "#/components/schemas/PaymentMethod"
+          },
+          "gross": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Gross",
+            "description": "Kwota w groszach (1 PLN = 100)"
+          },
+          "commission": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Commission",
+            "description": "Kwota w groszach (1 PLN = 100)"
+          },
+          "net": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Net",
+            "description": "Kwota w groszach (1 PLN = 100)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ride_id",
+          "completed_at",
+          "payment_method",
+          "gross",
+          "commission",
+          "net"
+        ],
+        "title": "EarningEntry"
+      },
+      "EarningsSummary": {
+        "properties": {
+          "date_from": {
+            "type": "string",
+            "format": "date",
+            "title": "Date From"
+          },
+          "date_to": {
+            "type": "string",
+            "format": "date",
+            "title": "Date To"
+          },
+          "rides_count": {
+            "type": "integer",
+            "title": "Rides Count"
+          },
+          "gross": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Gross",
+            "description": "Kwota w groszach (1 PLN = 100)"
+          },
+          "commission": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Commission",
+            "description": "Kwota w groszach (1 PLN = 100)"
+          },
+          "net": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Net",
+            "description": "Kwota w groszach (1 PLN = 100)"
+          },
+          "cash_collected": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Cash Collected",
+            "description": "Gotówka przyjęta przez kierowcę"
+          },
+          "commission_due_from_cash": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Commission Due From Cash",
+            "description": "Prowizja do rozliczenia z gotówki"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EarningEntry"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date_from",
+          "date_to",
+          "rides_count",
+          "gross",
+          "commission",
+          "net",
+          "cash_collected",
+          "commission_due_from_cash",
+          "items"
+        ],
+        "title": "EarningsSummary"
+      },
+      "GeoPoint": {
+        "properties": {
+          "lat": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Lat"
+          },
+          "lng": {
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "title": "Lng"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lat",
+          "lng"
+        ],
+        "title": "GeoPoint"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Health": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "ok"
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment"
+          }
+        },
+        "type": "object",
+        "required": [
+          "environment"
+        ],
+        "title": "Health"
+      },
+      "Me": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Identyfikator użytkownika (claim `sub` z Keycloaka)"
+          },
+          "email": {
+            "type": "string",
+            "nullable": true,
+            "title": "Email"
+          },
+          "full_name": {
+            "type": "string",
+            "nullable": true,
+            "title": "Full Name"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "title": "Phone"
+          },
+          "phone_verified": {
+            "type": "boolean",
+            "title": "Phone Verified"
+          },
+          "roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Roles",
+            "description": "Role realmu: passenger, driver, admin"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "email",
+          "full_name",
+          "phone",
+          "phone_verified",
+          "roles"
+        ],
+        "title": "Me"
+      },
+      "MeUpsert": {
+        "properties": {
+          "full_name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "nullable": true,
+            "title": "Full Name"
+          },
+          "phone": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{7,14}$",
+            "description": "Numer w formacie E.164, np. +48600100200",
+            "nullable": true,
+            "title": "Phone"
+          }
+        },
+        "type": "object",
+        "title": "MeUpsert"
+      },
+      "PaymentMethod": {
+        "type": "string",
+        "enum": [
+          "card",
+          "blik",
+          "cash"
+        ],
+        "title": "PaymentMethod",
+        "description": "`card` covers cards and wallets (Apple Pay / Google Pay) in Stripe PaymentSheet."
+      },
+      "PaymentStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "authorized",
+          "paid",
+          "refunded",
+          "failed",
+          "cash_due",
+          "cash_collected"
+        ],
+        "title": "PaymentStatus"
+      },
+      "PhoneVerificationConfirm": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^\\d{6}$",
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "title": "PhoneVerificationConfirm"
+      },
+      "PhoneVerificationRequest": {
+        "properties": {
+          "phone": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{7,14}$",
+            "title": "Phone",
+            "description": "Numer w formacie E.164, np. +48600100200"
+          }
+        },
+        "type": "object",
+        "required": [
+          "phone"
+        ],
+        "title": "PhoneVerificationRequest"
+      },
+      "Place": {
+        "properties": {
+          "location": {
+            "$ref": "#/components/schemas/GeoPoint"
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 300,
+            "title": "Address"
+          },
+          "place_id": {
+            "type": "string",
+            "nullable": true,
+            "title": "Place Id",
+            "description": "Google Places ID, jeśli znany"
+          }
+        },
+        "type": "object",
+        "required": [
+          "location",
+          "address"
+        ],
+        "title": "Place",
+        "description": "A point with a human-readable address (pickup / destination)."
+      },
+      "PlaceSuggestion": {
+        "properties": {
+          "place_id": {
+            "type": "string",
+            "title": "Place Id"
+          },
+          "primary_text": {
+            "type": "string",
+            "title": "Primary Text"
+          },
+          "secondary_text": {
+            "type": "string",
+            "nullable": true,
+            "title": "Secondary Text"
+          }
+        },
+        "type": "object",
+        "required": [
+          "place_id",
+          "primary_text",
+          "secondary_text"
+        ],
+        "title": "PlaceSuggestion"
+      },
+      "PublicConfig": {
+        "properties": {
+          "oidc_issuer": {
+            "type": "string",
+            "title": "Oidc Issuer"
+          },
+          "stripe_publishable_key": {
+            "type": "string",
+            "nullable": true,
+            "title": "Stripe Publishable Key"
+          },
+          "min_app_version": {
+            "type": "string",
+            "title": "Min App Version",
+            "description": "Starsze wersje muszą się zaktualizować",
+            "default": "0.1.0"
+          },
+          "support_phone": {
+            "type": "string",
+            "nullable": true,
+            "title": "Support Phone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "oidc_issuer",
+          "stripe_publishable_key"
+        ],
+        "title": "PublicConfig",
+        "description": "Non-secret runtime config for the apps (fetched on startup, no auth)."
+      },
+      "Quote": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "region_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Region Id"
+          },
+          "region_name": {
+            "type": "string",
+            "title": "Region Name"
+          },
+          "pickup": {
+            "$ref": "#/components/schemas/Place"
+          },
+          "destination": {
+            "$ref": "#/components/schemas/Place"
+          },
+          "scheduled_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "title": "Scheduled At"
+          },
+          "distance_m": {
+            "type": "integer",
+            "title": "Distance M"
+          },
+          "duration_s": {
+            "type": "integer",
+            "title": "Duration S"
+          },
+          "price": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Price",
+            "description": "Kwota w groszach (1 PLN = 100)"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "default": "PLN"
+          },
+          "tariff_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Tariff Id"
+          },
+          "route_polyline": {
+            "type": "string",
+            "nullable": true,
+            "title": "Route Polyline",
+            "description": "Trasa w formacie encoded polyline (Google)"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At",
+            "description": "Wycena ważna do (5 min)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "region_id",
+          "region_name",
+          "pickup",
+          "destination",
+          "scheduled_at",
+          "distance_m",
+          "duration_s",
+          "price",
+          "tariff_id",
+          "route_polyline",
+          "expires_at"
+        ],
+        "title": "Quote"
+      },
+      "QuoteRequest": {
+        "properties": {
+          "pickup": {
+            "$ref": "#/components/schemas/Place"
+          },
+          "destination": {
+            "$ref": "#/components/schemas/Place"
+          },
+          "scheduled_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "title": "Scheduled At",
+            "description": "Brak = kurs teraz; data = rezerwacja (min. 30 min, max. 14 dni)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pickup",
+          "destination"
+        ],
+        "title": "QuoteRequest"
+      },
+      "RatingCreate": {
+        "properties": {
+          "stars": {
+            "type": "integer",
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Stars"
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true,
+            "title": "Comment"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stars"
+        ],
+        "title": "RatingCreate"
+      },
+      "ReasonRequest": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reason"
+        ],
+        "title": "ReasonRequest"
+      },
+      "Region": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "teryt": {
+            "type": "string",
+            "nullable": true,
+            "title": "Teryt",
+            "description": "Kod TERYT gminy (7 cyfr)"
+          },
+          "timezone": {
+            "type": "string",
+            "title": "Timezone",
+            "default": "Europe/Warsaw"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "teryt",
+          "active"
+        ],
+        "title": "Region",
+        "description": "A municipality (gmina) served by the platform."
+      },
+      "RegionCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Name"
+          },
+          "teryt": {
+            "type": "string",
+            "pattern": "^\\d{7}$",
+            "nullable": true,
+            "title": "Teryt"
+          },
+          "area": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Area",
+            "description": "GeoJSON Polygon lub MultiPolygon (EPSG:4326)"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "area"
+        ],
+        "title": "RegionCreate"
+      },
+      "RegionDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "teryt": {
+            "type": "string",
+            "nullable": true,
+            "title": "Teryt",
+            "description": "Kod TERYT gminy (7 cyfr)"
+          },
+          "timezone": {
+            "type": "string",
+            "title": "Timezone",
+            "default": "Europe/Warsaw"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "area": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Area",
+            "description": "Granica gminy jako GeoJSON (Polygon lub MultiPolygon, WGS84 / EPSG:4326)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "teryt",
+          "active",
+          "area"
+        ],
+        "title": "RegionDetail"
+      },
+      "RegionUpdate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2,
+            "nullable": true,
+            "title": "Name"
+          },
+          "area": {
+            "additionalProperties": true,
+            "type": "object",
+            "nullable": true,
+            "title": "Area"
+          },
+          "active": {
+            "type": "boolean",
+            "nullable": true,
+            "title": "Active"
+          }
+        },
+        "type": "object",
+        "title": "RegionUpdate"
+      },
+      "Ride": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RideStatus"
+          },
+          "region_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Region Id"
+          },
+          "pickup": {
+            "$ref": "#/components/schemas/Place"
+          },
+          "destination": {
+            "$ref": "#/components/schemas/Place"
+          },
+          "scheduled_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "title": "Scheduled At",
+            "description": "Rezerwacja; brak = kurs teraz"
+          },
+          "requested_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Requested At"
+          },
+          "accepted_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "title": "Accepted At"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "title": "Started At"
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "title": "Completed At"
+          },
+          "cancelled_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "title": "Cancelled At"
+          },
+          "cancel_reason": {
+            "type": "string",
+            "nullable": true,
+            "title": "Cancel Reason"
+          },
+          "price": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Price",
+            "description": "Kwota w groszach (1 PLN = 100)"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "default": "PLN"
+          },
+          "payment_method": {
+            "$ref": "#/components/schemas/PaymentMethod"
+          },
+          "payment_status": {
+            "$ref": "#/components/schemas/PaymentStatus"
+          },
+          "distance_m": {
+            "type": "integer",
+            "title": "Distance M"
+          },
+          "duration_s": {
+            "type": "integer",
+            "title": "Duration S"
+          },
+          "route_polyline": {
+            "type": "string",
+            "nullable": true,
+            "title": "Route Polyline"
+          },
+          "passenger_note": {
+            "type": "string",
+            "nullable": true,
+            "title": "Passenger Note"
+          },
+          "driver": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RideDriverInfo"
+              }
+            ],
+            "nullable": true
+          },
+          "passenger": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RidePassengerInfo"
+              }
+            ],
+            "nullable": true,
+            "description": "Wypełniane tylko w widoku kierowcy/admina"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "region_id",
+          "pickup",
+          "destination",
+          "scheduled_at",
+          "requested_at",
+          "accepted_at",
+          "started_at",
+          "completed_at",
+          "cancelled_at",
+          "cancel_reason",
+          "price",
+          "payment_method",
+          "payment_status",
+          "distance_m",
+          "duration_s",
+          "route_polyline",
+          "passenger_note",
+          "driver",
+          "passenger"
+        ],
+        "title": "Ride"
+      },
+      "RideCreate": {
+        "properties": {
+          "quote_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Quote Id"
+          },
+          "payment_method": {
+            "$ref": "#/components/schemas/PaymentMethod"
+          },
+          "passenger_note": {
+            "type": "string",
+            "maxLength": 300,
+            "nullable": true,
+            "title": "Passenger Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "quote_id",
+          "payment_method"
+        ],
+        "title": "RideCreate"
+      },
+      "RideCreated": {
+        "properties": {
+          "ride": {
+            "$ref": "#/components/schemas/Ride"
+          },
+          "payment": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StripePaymentInit"
+              }
+            ],
+            "nullable": true,
+            "description": "Brak dla gotówki"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ride",
+          "payment"
+        ],
+        "title": "RideCreated"
+      },
+      "RideDriverInfo": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "title": "Phone"
+          },
+          "rating_avg": {
+            "type": "number",
+            "nullable": true,
+            "title": "Rating Avg"
+          },
+          "vehicle": {
+            "$ref": "#/components/schemas/Vehicle"
+          },
+          "location": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GeoPoint"
+              }
+            ],
+            "nullable": true,
+            "description": "Ostatnia znana pozycja (dalej przez WebSocket)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "full_name",
+          "phone",
+          "rating_avg",
+          "vehicle",
+          "location"
+        ],
+        "title": "RideDriverInfo",
+        "description": "What the passenger sees about the assigned driver."
+      },
+      "RideOffer": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "ride": {
+            "$ref": "#/components/schemas/Ride"
+          },
+          "pickup_distance_m": {
+            "type": "integer",
+            "title": "Pickup Distance M"
+          },
+          "pickup_eta_s": {
+            "type": "integer",
+            "title": "Pickup Eta S"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "ride",
+          "pickup_distance_m",
+          "pickup_eta_s",
+          "expires_at"
+        ],
+        "title": "RideOffer",
+        "description": "An offer to take a ride now. Expires after ~20 s (then goes to the next driver)."
+      },
+      "RidePage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Ride"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "RidePage"
+      },
+      "RidePassengerInfo": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "title": "Phone"
+          },
+          "rating_avg": {
+            "type": "number",
+            "nullable": true,
+            "title": "Rating Avg"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "full_name",
+          "phone",
+          "rating_avg"
+        ],
+        "title": "RidePassengerInfo",
+        "description": "What the driver sees about the passenger."
+      },
+      "RideStatus": {
+        "type": "string",
+        "enum": [
+          "requested",
+          "scheduled",
+          "dispatching",
+          "accepted",
+          "driver_arriving",
+          "arrived",
+          "in_progress",
+          "completed",
+          "cancelled_by_passenger",
+          "cancelled_by_driver",
+          "no_driver"
+        ],
+        "title": "RideStatus",
+        "description": "Ride state machine — transitions only via the `rides` service (zarys §6)."
+      },
+      "SignedUrl": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url",
+          "expires_at"
+        ],
+        "title": "SignedUrl"
+      },
+      "StripePaymentInit": {
+        "properties": {
+          "payment_intent_id": {
+            "type": "string",
+            "title": "Payment Intent Id"
+          },
+          "client_secret": {
+            "type": "string",
+            "title": "Client Secret"
+          },
+          "customer_id": {
+            "type": "string",
+            "nullable": true,
+            "title": "Customer Id"
+          },
+          "ephemeral_key_secret": {
+            "type": "string",
+            "nullable": true,
+            "title": "Ephemeral Key Secret"
+          },
+          "publishable_key": {
+            "type": "string",
+            "title": "Publishable Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "payment_intent_id",
+          "client_secret",
+          "customer_id",
+          "ephemeral_key_secret",
+          "publishable_key"
+        ],
+        "title": "StripePaymentInit",
+        "description": "Data for Stripe PaymentSheet in the app (`flutter_stripe`)."
+      },
+      "Tariff": {
+        "properties": {
+          "base_fare": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Base Fare",
+            "description": "Opłata startowa"
+          },
+          "per_km": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Per Km",
+            "description": "Stawka za km"
+          },
+          "per_minute": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Per Minute",
+            "description": "Stawka za minutę jazdy"
+          },
+          "minimum_fare": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Minimum Fare",
+            "description": "Cena minimalna kursu"
+          },
+          "night_multiplier_percent": {
+            "type": "integer",
+            "maximum": 300.0,
+            "minimum": 100.0,
+            "title": "Night Multiplier Percent",
+            "description": "Mnożnik nocny w procentach (np. 120 = +20%)",
+            "default": 100
+          },
+          "night_start_hour": {
+            "type": "integer",
+            "maximum": 23.0,
+            "minimum": 0.0,
+            "title": "Night Start Hour",
+            "default": 22
+          },
+          "night_end_hour": {
+            "type": "integer",
+            "maximum": 23.0,
+            "minimum": 0.0,
+            "title": "Night End Hour",
+            "default": 6
+          },
+          "commission_percent": {
+            "type": "integer",
+            "maximum": 50.0,
+            "minimum": 0.0,
+            "title": "Commission Percent",
+            "description": "Prowizja platformy",
+            "default": 10
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "region_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Region Id"
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Valid From"
+          },
+          "valid_to": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "title": "Valid To"
+          }
+        },
+        "type": "object",
+        "required": [
+          "base_fare",
+          "per_km",
+          "per_minute",
+          "minimum_fare",
+          "id",
+          "region_id",
+          "valid_from",
+          "valid_to"
+        ],
+        "title": "Tariff",
+        "description": "A tariff version. Creating a new one closes the previous version (`valid_to`)."
+      },
+      "TariffCreate": {
+        "properties": {
+          "base_fare": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Base Fare",
+            "description": "Opłata startowa"
+          },
+          "per_km": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Per Km",
+            "description": "Stawka za km"
+          },
+          "per_minute": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Per Minute",
+            "description": "Stawka za minutę jazdy"
+          },
+          "minimum_fare": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Minimum Fare",
+            "description": "Cena minimalna kursu"
+          },
+          "night_multiplier_percent": {
+            "type": "integer",
+            "maximum": 300.0,
+            "minimum": 100.0,
+            "title": "Night Multiplier Percent",
+            "description": "Mnożnik nocny w procentach (np. 120 = +20%)",
+            "default": 100
+          },
+          "night_start_hour": {
+            "type": "integer",
+            "maximum": 23.0,
+            "minimum": 0.0,
+            "title": "Night Start Hour",
+            "default": 22
+          },
+          "night_end_hour": {
+            "type": "integer",
+            "maximum": 23.0,
+            "minimum": 0.0,
+            "title": "Night End Hour",
+            "default": 6
+          },
+          "commission_percent": {
+            "type": "integer",
+            "maximum": 50.0,
+            "minimum": 0.0,
+            "title": "Commission Percent",
+            "description": "Prowizja platformy",
+            "default": 10
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "title": "Valid From",
+            "description": "Domyślnie: teraz"
+          }
+        },
+        "type": "object",
+        "required": [
+          "base_fare",
+          "per_km",
+          "per_minute",
+          "minimum_fare"
+        ],
+        "title": "TariffCreate"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "Vehicle": {
+        "properties": {
+          "make": {
+            "type": "string",
+            "maxLength": 60,
+            "title": "Make"
+          },
+          "model": {
+            "type": "string",
+            "maxLength": 60,
+            "title": "Model"
+          },
+          "color": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Color"
+          },
+          "plate": {
+            "type": "string",
+            "maxLength": 12,
+            "title": "Plate",
+            "description": "Numer rejestracyjny"
+          },
+          "seats": {
+            "type": "integer",
+            "maximum": 8.0,
+            "minimum": 1.0,
+            "title": "Seats",
+            "default": 4
+          }
+        },
+        "type": "object",
+        "required": [
+          "make",
+          "model",
+          "color",
+          "plate"
+        ],
+        "title": "Vehicle"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "description": "Access token z Keycloaka (realm podwozka)",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

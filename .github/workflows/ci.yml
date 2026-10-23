@@ -1,0 +1,156 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: "3.47.1"
+  UV_VERSION: "0.13.0"
+
+jobs:
+  backend:
+    name: Backend (lint, typy, testy)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      db:
+        image: postgis/postgis:18-3.6
+        env:
+          POSTGRES_USER: podwozka
+          POSTGRES_PASSWORD: podwozka
+          POSTGRES_DB: podwozka_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U podwozka" --health-interval 5s
+          --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:8.10.2-alpine
+        ports: ["6379:6379"]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+      - run: uv sync --locked
+      - name: Ruff
+        run: uv run ruff check . && uv run ruff format --check .
+      - name: Mypy
+        run: uv run mypy app
+      - name: Migracje zgodne z modelami
+        env:
+          DATABASE_URL: postgresql+asyncpg://podwozka:podwozka@localhost:5432/podwozka_test
+        run: uv run alembic upgrade head && uv run alembic check
+      - name: Testy
+        run: uv run pytest --cov --cov-report=xml --cov-report=term
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-backend
+          path: backend/coverage.xml
+
+  contract:
+    name: Kontrakt API (OpenAPI ↔ klient Dart)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: cd backend && uv sync --locked
+      - name: Wygeneruj kontrakt i klienta
+        run: ./scripts/gen-api-client.sh
+      - name: Brak rozjazdu z commitem
+        run: |
+          if ! git diff --exit-code -- openapi mobile/packages/api_client; then
+            echo "::error::openapi/ lub mobile/packages/api_client nie pasuje do kodu backendu. Uruchom ./scripts/gen-api-client.sh i scommituj wynik."
+            exit 1
+          fi
+
+  mobile:
+    name: Mobile (format, analiza, testy)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Format
+        run: dart format --set-exit-if-changed .
+      - name: Analiza
+        run: flutter analyze
+      - name: Testy z pokryciem
+        run: |
+          for pkg in packages/core apps/passenger apps/driver; do
+            (cd "$pkg" && flutter test --coverage)
+            # Ścieżki w lcov względem katalogu głównego repo (dla SonarQube)
+            sed -i "s|^SF:|SF:mobile/$pkg/|" "$pkg/coverage/lcov.info"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-mobile
+          path: mobile/**/coverage/lcov.info
+
+  sonar:
+    name: SonarQube Cloud (Quality Gate)
+    needs: [backend, mobile]
+    runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Brak SONAR_TOKEN
+        if: env.SONAR_TOKEN == ''
+        run: echo "::warning::Ustaw sekret SONAR_TOKEN (Settings → Secrets → Actions), żeby włączyć Quality Gate."
+      - uses: actions/download-artifact@v4
+        if: env.SONAR_TOKEN != ''
+        with:
+          name: coverage-backend
+          path: backend
+      - uses: actions/download-artifact@v4
+        if: env.SONAR_TOKEN != ''
+        with:
+          name: coverage-mobile
+          path: mobile
+      - uses: subosito/flutter-action@v2
+        if: env.SONAR_TOKEN != ''
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Zależności Darta (wymagane do analizy)
+        if: env.SONAR_TOKEN != ''
+        run: cd mobile && flutter pub get
+      - uses: SonarSource/sonarqube-scan-action@v6
+        if: env.SONAR_TOKEN != ''

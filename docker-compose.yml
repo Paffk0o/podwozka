@@ -1,0 +1,104 @@
+# Lokalne środowisko: docker compose up -d
+# Reset wszystkiego (baza + ponowny import realmu Keycloaka): docker compose down -v
+
+name: podwozka
+
+services:
+  db:
+    image: postgis/postgis:18-3.6
+    environment:
+      POSTGRES_USER: podwozka
+      POSTGRES_PASSWORD: podwozka
+      POSTGRES_DB: podwozka
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U podwozka -d podwozka"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:8.10.2-alpine
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.0
+    # start-dev: tylko lokalnie. Na Azure obraz budowany z `kc.sh build` i start --optimized.
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://db:5432/keycloak
+      KC_DB_USERNAME: podwozka
+      KC_DB_PASSWORD: podwozka
+      # Stały adres w tokenach (claim `iss`). Telefony/emulatory: `adb reverse tcp:8080 tcp:8080`.
+      KC_HOSTNAME: http://localhost:8080
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+    ports: ["8080:8080"]
+    volumes:
+      - ./infra/keycloak/realm-podwozka.json:/opt/keycloak/data/import/realm-podwozka.json:ro
+    depends_on:
+      db: { condition: service_healthy }
+    healthcheck:
+      # Obraz Keycloaka nie ma curla — sprawdzamy /health/ready przez /dev/tcp.
+      test:
+        - CMD-SHELL
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/9000 &&
+          printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 &&
+          grep -q '"status": "UP"' <&3
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  mailpit:
+    image: axllent/mailpit:v1.30.5
+    ports: ["8025:8025", "1025:1025"]
+
+  migrate:
+    build: ./backend
+    command: ["alembic", "upgrade", "head"]
+    environment: &api-env
+      ENVIRONMENT: local
+      DATABASE_URL: postgresql+asyncpg://podwozka:podwozka@db:5432/podwozka
+      REDIS_URL: redis://redis:6379/0
+      OIDC_ISSUER: http://localhost:8080/realms/podwozka
+      OIDC_JWKS_URL: http://keycloak:8080/realms/podwozka/protocol/openid-connect/certs
+      # dev-cli: tylko lokalnie, do pobierania tokenów curl/Swagger (password grant).
+      OIDC_ALLOWED_CLIENTS: '["passenger-app","driver-app","admin-panel","dev-cli"]'
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+    depends_on:
+      db: { condition: service_healthy }
+
+  api:
+    build: ./backend
+    environment: *api-env
+    ports: ["8000:8000"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+      keycloak: { condition: service_healthy }
+    develop:
+      # `docker compose watch` — przeładowanie po zmianie kodu
+      watch:
+        - action: sync+restart
+          path: ./backend/app
+          target: /app/app
+        - action: rebuild
+          path: ./backend/uv.lock
+
+volumes:
+  pgdata:
