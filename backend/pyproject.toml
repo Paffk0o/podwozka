@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Podwózka — backend (FastAPI, modularny monolit)"
 requires-python = ">=3.14,<3.16"
 dependencies = [
-    "fastapi[standard-no-fastapi-cloud-cli]>=0.143,<0.144",
+    "fastapi[standard-no-fastapi-cloud-cli]>=0.143,<0.157",
     "pydantic>=2.14,<3",
     "pydantic-settings>=2.15,<3",
     "sqlalchemy[asyncio]>=2.1.4,<2.2",
