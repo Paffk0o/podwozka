@@ -30,7 +30,7 @@ services:
       retries: 20
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.8.0
+    image: quay.io/keycloak/keycloak:26.8.1-1
     # start-dev: tylko lokalnie. Na Azure obraz budowany z `kc.sh build` i start --optimized.
     command: ["start-dev", "--import-realm"]
     environment:
