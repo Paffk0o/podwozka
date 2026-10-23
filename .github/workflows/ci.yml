@@ -152,5 +152,5 @@ jobs:
       - name: Zależności Darta (wymagane do analizy)
         if: env.SONAR_TOKEN != ''
         run: cd mobile && flutter pub get
-      - uses: SonarSource/sonarqube-scan-action@v6
+      - uses: SonarSource/sonarqube-scan-action@v8
         if: env.SONAR_TOKEN != ''
