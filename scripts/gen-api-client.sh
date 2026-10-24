@@ -32,6 +32,13 @@ text = open(path).read()
 text = re.sub(r"(?m)^  sdk: .*$", "  sdk: ^3.13.0", text)
 if "resolution: workspace" not in text:
     text = text.replace("environment:", "resolution: workspace\n\nenvironment:", 1)
+# The generator pins old versions of its codegen deps (e.g. copy_with_extension_gen ^7 ->
+# analyzer ^7), which conflict with the current Flutter SDK. Let pub pick compatible ones.
+for pkg in ("build_runner", "json_serializable", "json_annotation",
+            "copy_with_extension", "copy_with_extension_gen"):
+    text = re.sub(rf"(?m)^(  {pkg}:)\s*['\"]?[^\n'\"]*['\"]?$", r"\1 any", text)
+# Generated tests are disabled; `test` would pin analyzer to a conflicting range.
+text = re.sub(r"(?m)^  test:.*\n", "", text)
 open(path, "w").write(text)
 PY
 
