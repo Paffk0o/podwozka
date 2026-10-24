@@ -22,6 +22,8 @@ cd .. && ./scripts/gen-api-client.sh   # generuje packages/api_client (wymaga Do
 
 Oba wyniki commitujemy (to jednorazowa konfiguracja, potem zwykła praca).
 
+**Bez lokalnego Fluttera/Dockera:** wypchnij gałąź o nazwie `regen/<coś>` — workflow „Regeneracja klienta API” wygeneruje klienta, uruchomi `dart format`, zacommituje wynik na tę gałąź i pokaże błędy `dart analyze` / `flutter test` jako adnotacje w zakładce Actions. Uwaga: commit bota nie uruchamia CI — po nim wypchnij dowolny commit albo otwórz PR.
+
 ## Uruchomienie na emulatorze / telefonie
 
 1. Backend lokalnie: `docker compose up -d` w katalogu głównym.

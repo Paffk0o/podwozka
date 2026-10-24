@@ -1,2 +1,73 @@
-// PLACEHOLDER — wygeneruj klienta: ./scripts/gen-api-client.sh (z katalogu głównego repo).
-library;
+//
+// AUTO-GENERATED FILE, DO NOT MODIFY!
+//
+
+export 'package:podwozka_api/src/api.dart';
+export 'package:podwozka_api/src/auth/api_key_auth.dart';
+export 'package:podwozka_api/src/auth/basic_auth.dart';
+export 'package:podwozka_api/src/auth/bearer_auth.dart';
+export 'package:podwozka_api/src/auth/oauth.dart';
+
+export 'package:podwozka_api/src/api/admin_api.dart';
+export 'package:podwozka_api/src/api/driver_api.dart';
+export 'package:podwozka_api/src/api/me_api.dart';
+export 'package:podwozka_api/src/api/payments_api.dart';
+export 'package:podwozka_api/src/api/places_api.dart';
+export 'package:podwozka_api/src/api/quotes_api.dart';
+export 'package:podwozka_api/src/api/regions_api.dart';
+export 'package:podwozka_api/src/api/rides_api.dart';
+export 'package:podwozka_api/src/api/system_api.dart';
+
+export 'package:podwozka_api/src/model/admin_driver.dart';
+export 'package:podwozka_api/src/model/admin_driver_page.dart';
+export 'package:podwozka_api/src/model/availability_update.dart';
+export 'package:podwozka_api/src/model/cancel_request.dart';
+export 'package:podwozka_api/src/model/device_platform.dart';
+export 'package:podwozka_api/src/model/device_token_in.dart';
+export 'package:podwozka_api/src/model/document_status.dart';
+export 'package:podwozka_api/src/model/document_type.dart';
+export 'package:podwozka_api/src/model/document_upload_request.dart';
+export 'package:podwozka_api/src/model/document_upload_slot.dart';
+export 'package:podwozka_api/src/model/driver_application_upsert.dart';
+export 'package:podwozka_api/src/model/driver_current_state.dart';
+export 'package:podwozka_api/src/model/driver_document.dart';
+export 'package:podwozka_api/src/model/driver_profile.dart';
+export 'package:podwozka_api/src/model/driver_ride_action.dart';
+export 'package:podwozka_api/src/model/driver_ride_action_request.dart';
+export 'package:podwozka_api/src/model/driver_status.dart';
+export 'package:podwozka_api/src/model/earning_entry.dart';
+export 'package:podwozka_api/src/model/earnings_summary.dart';
+export 'package:podwozka_api/src/model/geo_point.dart';
+export 'package:podwozka_api/src/model/http_validation_error.dart';
+export 'package:podwozka_api/src/model/health.dart';
+export 'package:podwozka_api/src/model/me.dart';
+export 'package:podwozka_api/src/model/me_upsert.dart';
+export 'package:podwozka_api/src/model/payment_method.dart';
+export 'package:podwozka_api/src/model/payment_status.dart';
+export 'package:podwozka_api/src/model/phone_verification_confirm.dart';
+export 'package:podwozka_api/src/model/phone_verification_request.dart';
+export 'package:podwozka_api/src/model/place.dart';
+export 'package:podwozka_api/src/model/place_suggestion.dart';
+export 'package:podwozka_api/src/model/public_config.dart';
+export 'package:podwozka_api/src/model/quote.dart';
+export 'package:podwozka_api/src/model/quote_request.dart';
+export 'package:podwozka_api/src/model/rating_create.dart';
+export 'package:podwozka_api/src/model/reason_request.dart';
+export 'package:podwozka_api/src/model/region.dart';
+export 'package:podwozka_api/src/model/region_create.dart';
+export 'package:podwozka_api/src/model/region_detail.dart';
+export 'package:podwozka_api/src/model/region_update.dart';
+export 'package:podwozka_api/src/model/ride.dart';
+export 'package:podwozka_api/src/model/ride_create.dart';
+export 'package:podwozka_api/src/model/ride_created.dart';
+export 'package:podwozka_api/src/model/ride_driver_info.dart';
+export 'package:podwozka_api/src/model/ride_offer.dart';
+export 'package:podwozka_api/src/model/ride_page.dart';
+export 'package:podwozka_api/src/model/ride_passenger_info.dart';
+export 'package:podwozka_api/src/model/ride_status.dart';
+export 'package:podwozka_api/src/model/signed_url.dart';
+export 'package:podwozka_api/src/model/stripe_payment_init.dart';
+export 'package:podwozka_api/src/model/tariff.dart';
+export 'package:podwozka_api/src/model/tariff_create.dart';
+export 'package:podwozka_api/src/model/validation_error.dart';
+export 'package:podwozka_api/src/model/vehicle.dart';

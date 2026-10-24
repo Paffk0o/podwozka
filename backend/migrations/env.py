@@ -45,7 +45,13 @@ def _run_sync(connection: Connection) -> None:
 
 
 async def run_migrations_online() -> None:
-    engine = create_async_engine(get_settings().database_url)
+    # Only `public`: the postgis/postgis Docker image adds `topology` and `tiger` to the
+    # database search_path, and SQLAlchemy would otherwise reflect the TIGER geocoder tables
+    # as ours and `alembic check` / autogenerate would try to drop them.
+    engine = create_async_engine(
+        get_settings().database_url,
+        connect_args={"server_settings": {"search_path": "public"}},
+    )
     async with engine.connect() as connection:
         await connection.run_sync(_run_sync)
     await engine.dispose()

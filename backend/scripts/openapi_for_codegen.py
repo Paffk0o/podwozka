@@ -45,6 +45,16 @@ def convert(node: Any) -> Any:
             if len(rest) == 1:
                 return _nullable(rest[0], extra)
             node = {**extra, key: rest, "nullable": True}
+            options = rest
+        # Unions of plain scalars (e.g. FastAPI's ValidationError.loc: string | integer)
+        # produce broken Dart classes -> treat them as "any JSON value".
+        if (
+            isinstance(options, list)
+            and options
+            and all(isinstance(o, dict) and "$ref" not in o and "type" in o for o in options)
+            and all(o["type"] in ("string", "integer", "number", "boolean") for o in options)
+        ):
+            return {k: v for k, v in node.items() if k != key}
 
     type_ = node.get("type")
     if isinstance(type_, list) and "null" in type_:
