@@ -1,0 +1,92 @@
+# Narzędzie: regeneracja klienta API + dart format + raport z analizy Fluttera.
+# Uruchamia się po pushu na gałąź `regen/**` albo ręcznie (Actions → Regeneracja → Run workflow).
+# Wynik (wygenerowany klient, sformatowany kod) jest commitowany z powrotem na tę samą gałąź.
+# Błędy analizy i testów pojawiają się jako adnotacje (widoczne w podsumowaniu runa i w API).
+name: Regeneracja klienta API
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["regen/**"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: regen-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: "3.47.1"
+  UV_VERSION: "0.13.0"
+
+jobs:
+  regen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: cd backend && uv sync --locked
+
+      - name: Generuj kontrakt i klienta Dart
+        run: |
+          set -o pipefail
+          if ! ./scripts/gen-api-client.sh 2>&1 | tee /tmp/gen.log; then
+            msg=$(tail -c 6000 /tmp/gen.log | sed -e 's/%/%25/g' | sed -e ':a;N;$!ba;s/\n/%0A/g')
+            echo "::error title=gen-api-client.sh::${msg}"
+            exit 1
+          fi
+
+      - name: dart format
+        run: cd mobile && flutter pub get && dart format .
+
+      - name: Commit wyników na tę gałąź
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A openapi mobile
+          if git diff --cached --quiet; then
+            echo "Brak zmian do commitowania."
+          else
+            git commit -m "chore: regeneracja klienta API i dart format [bot]"
+            git push
+          fi
+
+      - name: flutter analyze → adnotacje
+        if: always()
+        continue-on-error: true
+        run: |
+          cd mobile
+          dart analyze --format=machine . > /tmp/analyze.txt 2>&1 || true
+          count=0
+          while IFS='|' read -r severity type code file line col len message; do
+            [ -z "$file" ] && continue
+            rel="${file#"$GITHUB_WORKSPACE"/}"
+            level=error; [ "$severity" = "INFO" ] && level=notice; [ "$severity" = "WARNING" ] && level=warning
+            echo "::${level} file=${rel},line=${line},col=${col},title=${code}::${message}"
+            count=$((count+1))
+          done < /tmp/analyze.txt
+          echo "Problemów: $count"
+          [ "$count" -eq 0 ]
+
+      - name: flutter test → adnotacje
+        if: always()
+        continue-on-error: true
+        run: |
+          status=0
+          for pkg in packages/core apps/passenger apps/driver; do
+            if ! (cd "mobile/$pkg" && flutter test > /tmp/test.log 2>&1); then
+              status=1
+              msg=$(grep -v "^\s*$" /tmp/test.log | tail -c 6000 | sed -e 's/%/%25/g' | sed -e ':a;N;$!ba;s/\n/%0A/g')
+              echo "::error title=flutter test ${pkg}::${msg}"
+            fi
+          done
+          exit $status
