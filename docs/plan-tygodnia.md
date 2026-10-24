@@ -17,7 +17,7 @@ Zrobione w repo (szczegóły: `README.md`):
 ## Dzień 2 — rozruch (każdy u siebie, rano)
 
 1. `docker compose up -d` → http://localhost:8000/docs działa, logowanie `pasazer@podwozka.test` / `Test1234!` w Keycloaku działa.
-2. **Mobile (pierwsze zadanie dnia):** `mobile/scripts/setup_platforms.sh`, `./scripts/gen-api-client.sh`, `dart format .`, `flutter analyze` → popraw ewentualne błędy szkieletu (powstał bez kompilatora Darta), uruchom obie aplikacje na emulatorze, zaloguj się. PR „platformy + klient API”.
+2. **Mobile (pierwsze zadanie dnia):** klient API jest już wygenerowany, a kod sformatowany i sprawdzony przez CI (workflow „Regeneracja klienta API”). Zainstaluj Fluttera, uruchom `mobile/scripts/setup_platforms.sh`, odpal obie aplikacje na emulatorze i zaloguj się. Zastąp tymczasowy `Profile` wygenerowanym `MeApi`. PR „platformy Android/iOS”.
 3. **DevOps (pierwsze zadanie dnia):** repo na GitHubie, ochrona `main`, sekret `SONAR_TOKEN`, projekt w SonarQube Cloud (uzupełnij `sonar-project.properties`), pierwszy zielony CI.
 
 Od tego momentu trzy agenty pracują równolegle.
