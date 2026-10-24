@@ -26,8 +26,10 @@ class HomeScreen extends ConsumerWidget {
           data: (p) => Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Cześć, ${p.fullName ?? p.email ?? 'pasażerze'}!',
-                  style: Theme.of(context).textTheme.headlineSmall),
+              Text(
+                'Cześć, ${p.fullName ?? p.email ?? 'pasażerze'}!',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
               const SizedBox(height: 8),
               Text('Role: ${p.roles.join(', ')}'),
             ],

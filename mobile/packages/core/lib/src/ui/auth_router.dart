@@ -35,11 +35,8 @@ GoRouter createAuthRouter(
   final router = GoRouter(
     initialLocation: AuthRoutes.splash,
     refreshListenable: authState,
-    redirect: (context, state) => authRedirect(
-      auth: authState.value,
-      location: state.matchedLocation,
-      homePath: homePath,
-    ),
+    redirect: (context, state) =>
+        authRedirect(auth: authState.value, location: state.matchedLocation, homePath: homePath),
     routes: [
       GoRoute(path: AuthRoutes.splash, builder: (_, _) => const SplashScreen()),
       GoRoute(path: AuthRoutes.login, builder: (_, _) => login),
