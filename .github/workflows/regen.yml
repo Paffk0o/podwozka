@@ -40,7 +40,8 @@ jobs:
         run: |
           set -o pipefail
           if ! ./scripts/gen-api-client.sh 2>&1 | tee /tmp/gen.log; then
-            msg=$(tail -c 6000 /tmp/gen.log | sed -e 's/%/%25/g' | sed -e ':a;N;$!ba;s/\n/%0A/g')
+            # GitHub cuts annotations at 4 KB — skip noise and keep the end of the log.
+            msg=$(grep -vE '^\+ |^\[main\] INFO|^  [a-z_]+ [0-9]' /tmp/gen.log | tail -c 3500 | sed -e 's/%/%25/g' | sed -e ':a;N;$!ba;s/\n/%0A/g')
             echo "::error title=gen-api-client.sh::${msg}"
             exit 1
           fi
@@ -85,7 +86,7 @@ jobs:
           for pkg in packages/core apps/passenger apps/driver; do
             if ! (cd "mobile/$pkg" && flutter test > /tmp/test.log 2>&1); then
               status=1
-              msg=$(grep -v "^\s*$" /tmp/test.log | tail -c 6000 | sed -e 's/%/%25/g' | sed -e ':a;N;$!ba;s/\n/%0A/g')
+              msg=$(grep -v "^\s*$" /tmp/test.log | tail -c 3500 | sed -e 's/%/%25/g' | sed -e ':a;N;$!ba;s/\n/%0A/g')
               echo "::error title=flutter test ${pkg}::${msg}"
             fi
           done
