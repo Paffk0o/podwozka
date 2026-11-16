@@ -8,3 +8,4 @@ Format wpisu: data · obszar · narzędzie/model · co zrobił agent · co popra
 |---|---|---|---|---|---|
 | 2026-10-24 | Wszystkie | Claude (claude-opus-5-5) | Fundament: monorepo, AGENTS.md, docker compose, realm Keycloak, backend (JWT, /me, kontrakt v1 jako stuby, testy), core Flutter (PKCE, odświeżanie tokenu), CI | Wybór stosu i zakresu MVP, termin 6.12, podział na 3 agentów | — |
 | 2026-11-16 | Backend | Claude Code (claude-opus-5-5) | Regiony (PostGIS MultiPolygon), wersjonowane cenniki, admin CRUD, seed dwóch gmin; wykryta i naprawiona usterka eksportu OpenAPI na Windowsie (cp1250) | Właściciel: zakres etapu i wybór gmin pozostawiony agentowi (Wieliczka, Niepołomice) | #26 |
+| 2026-11-16 | Backend | Claude Code (claude-opus-5-5) | POST /quotes: RoutingProvider (Google Routes + offline po prostej x1,3, 40 km/h), cena całkowitoliczbowa w groszach z nocnym mnożnikiem w strefie regionu, wycena 5 min | — | #28 |

@@ -13,7 +13,7 @@ Pamięć między sesjami agenta. Po każdym zmergowanym PR: odhacz zadanie i dop
 
 ### Zakres
 - [x] 1. Regiony i cenniki: modele + migracja (PostGIS, wersjonowane cenniki), GET /regions, admin CRUD regionów (GeoJSON) i cenników, seed dwóch gmin — #26
-- [ ] 2. Wycena: POST /quotes, RoutingProvider (Google Routes / fallback po prostej × 1,3, 40 km/h), ST_Contains, nocny mnożnik, minimum, ważność 5 min
+- [x] 2. Wycena: POST /quotes, RoutingProvider (Google Routes / fallback po prostej × 1,3, 40 km/h), ST_Contains, nocny mnożnik, minimum, ważność 5 min — #28
 - [ ] 3. Adresy: /places/autocomplete, /places/{id}, /places/reverse — Google Places / fallback Nominatim (User-Agent, 1 zapytanie/s, cache)
 - [ ] 4. Kursy pasażera (gotówka): maszyna stanów + ride_events, POST /rides (card/blik → 422), GET /rides, GET /rides/{id}, anulowanie, ocena
 - [ ] 5. Kierowcy: wniosek, dokumenty przez SAS (Azurite w docker-compose), admin: lista/szczegóły/view-url/approve (rola w Keycloaku)/reject/suspend
