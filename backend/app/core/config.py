@@ -47,6 +47,10 @@ class Settings(BaseSettings):
     azure_storage_container: str = "driver-documents"
     azure_storage_public_url: str | None = None
 
+    # FCM service-account JSON (a file mounted into the container, never in the repo).
+    # Empty = push notifications are only logged.
+    firebase_credentials_file: str | None = None
+
     # Ordering requires a verified phone (zarys 5.1). Off until SMS verification (SMSAPI) exists.
     require_verified_phone: bool = False
     # Address fallback without a Google key. Nominatim's policy requires an identifying

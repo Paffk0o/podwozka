@@ -83,7 +83,7 @@ Do każdego użytkownika (kanał `user:{sub}`), np. przypomnienie o rezerwacji (
    "data": {"ride_id": "..."}}
 ```
 
-Gdy aplikacja jest zamknięta, ta sama treść pójdzie jako push FCM (🔜 punkt 9).
+Gdy aplikacja jest zamknięta, ta sama treść idzie jako push FCM (worker Celery, `push.send`). Push bez wiadomości `notification` (aplikacja dostaje osobne zdarzenie WS): `offer.new` dla kierowcy, „Kierowca w drodze” i „Kierowca na miejscu” dla pasażera.
 
 ## 5. Błędy
 

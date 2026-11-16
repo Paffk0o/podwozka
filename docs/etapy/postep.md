@@ -20,7 +20,7 @@ Pamięć między sesjami agenta. Po każdym zmergowanym PR: odhacz zadanie i dop
 - [x] 6. Dyspozycja na żywo: availability, pozycja przez WS → Redis GEO, oferta najbliższemu, timeout 20 s (Celery worker + beat), accept odporny na wyścig, decline, no_driver, WS + Redis pub/sub — #32
 - [x] 7. Kurs w toku: /drivers/me/current, depart/arrived/start/complete, cash-collected, anulowanie przez kierowcę, ocena pasażera, rejestr zarobków, GET /earnings — #33
 - [x] 8. Rezerwacje: scheduled_at, giełda (scheduled-board, claim), beat: przypomnienie T−60, dyspozycja T−30 — #34
-- [ ] 9. Push: PushSender (FCM / logujący fallback), PUT /me/device-tokens
+- [x] 9. Push: PushSender (FCM / logujący fallback), PUT /me/device-tokens — #35
 - [ ] 10. Admin — kursy: GET /admin/rides z filtrami
 - [ ] 11. `docker compose up -d` stawia wszystko (migracje → seed idempotentny → API, worker, beat, Keycloak, Azurite)
 - [ ] 12. `scripts/demo_flow.py` — scenariusz end-to-end przez prawdziwe API

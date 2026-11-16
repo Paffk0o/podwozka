@@ -243,6 +243,7 @@
           "me"
         ],
         "summary": "Zarejestruj token push (FCM) urządzenia",
+        "description": "Wywołuj po zalogowaniu i przy każdej zmianie tokenu (onTokenRefresh).",
         "operationId": "register_device_token",
         "requestBody": {
           "content": {
@@ -257,9 +258,6 @@
         "responses": {
           "204": {
             "description": "Successful Response"
-          },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
           },
           "422": {
             "description": "Validation Error",

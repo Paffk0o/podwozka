@@ -18,6 +18,7 @@ dependencies = [
     "tzdata>=2026.6",  # IANA time zones for zoneinfo (Windows has no system tz database)
     "azure-storage-blob>=12.31,<13",
     "celery[redis]>=5.6,<5.7",
+    "firebase-admin>=7.7,<7.8",
 ]
 
 [dependency-groups]
@@ -52,7 +53,7 @@ plugins = ["pydantic.mypy"]
 exclude = ["migrations/"]
 
 [[tool.mypy.overrides]]
-module = ["geoalchemy2.*", "celery.*"]
+module = ["geoalchemy2.*", "celery.*", "firebase_admin.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

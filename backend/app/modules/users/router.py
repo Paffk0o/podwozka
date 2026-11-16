@@ -72,7 +72,9 @@ async def confirm_phone_verification(principal: PrincipalDep, body: PhoneVerific
     "/device-tokens",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Zarejestruj token push (FCM) urządzenia",
-    responses=STUB_RESPONSES,
+    description="Wywołuj po zalogowaniu i przy każdej zmianie tokenu (onTokenRefresh).",
 )
-async def register_device_token(principal: PrincipalDep, body: DeviceTokenIn) -> None:
-    not_implemented()
+async def register_device_token(
+    principal: PrincipalDep, session: SessionDep, body: DeviceTokenIn
+) -> None:
+    await service.register_device_token(session, principal, body)

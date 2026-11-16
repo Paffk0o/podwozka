@@ -100,6 +100,9 @@ services:
       AZURE_STORAGE_PUBLIC_URL: http://localhost:10000/devstoreaccount1
       GOOGLE_MAPS_SERVER_KEY: ${GOOGLE_MAPS_SERVER_KEY:-}
       NOMINATIM_USER_AGENT: ${NOMINATIM_USER_AGENT:-Podwozka-backend/1.0}
+      # Push (FCM): put the Firebase service-account JSON in ./secrets/ (git-ignored) and set
+      # FIREBASE_CREDENTIALS_FILE=/run/secrets/firebase-service-account.json in .env.
+      FIREBASE_CREDENTIALS_FILE: ${FIREBASE_CREDENTIALS_FILE:-}
       STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
       SENTRY_DSN: ${SENTRY_DSN:-}
     depends_on:
@@ -128,6 +131,8 @@ services:
     build: ./backend
     command: ["celery", "-A", "app.worker", "worker", "--loglevel=info", "--concurrency=2"]
     environment: *api-env
+    volumes:
+      - ./secrets:/run/secrets:ro
     depends_on:
       migrate: { condition: service_completed_successfully }
       redis: { condition: service_healthy }

@@ -136,6 +136,8 @@ This endpoint does not need any parameter.
 
 Zarejestruj token push (FCM) urządzenia
 
+Wywołuj po zalogowaniu i przy każdej zmianie tokenu (onTokenRefresh).
+
 ### Example
 ```dart
 import 'package:podwozka_api/api.dart';
