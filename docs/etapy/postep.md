@@ -17,7 +17,7 @@ Pamięć między sesjami agenta. Po każdym zmergowanym PR: odhacz zadanie i dop
 - [x] 3. Adresy: /places/autocomplete, /places/{id}, /places/reverse — Google Places / fallback Nominatim (User-Agent, 1 zapytanie/s, cache) — #29
 - [x] 4. Kursy pasażera (gotówka): maszyna stanów + ride_events, POST /rides (card/blik → 422), GET /rides, GET /rides/{id}, anulowanie, ocena — #30
 - [x] 5. Kierowcy: wniosek, dokumenty przez SAS (Azurite w docker-compose), admin: lista/szczegóły/view-url/approve (rola w Keycloaku)/reject/suspend — #31
-- [ ] 6. Dyspozycja na żywo: availability, pozycja przez WS → Redis GEO, oferta najbliższemu, timeout 20 s (Celery worker + beat), accept odporny na wyścig, decline, no_driver, WS + Redis pub/sub
+- [x] 6. Dyspozycja na żywo: availability, pozycja przez WS → Redis GEO, oferta najbliższemu, timeout 20 s (Celery worker + beat), accept odporny na wyścig, decline, no_driver, WS + Redis pub/sub — #32
 - [ ] 7. Kurs w toku: /drivers/me/current, depart/arrived/start/complete, cash-collected, anulowanie przez kierowcę, ocena pasażera, rejestr zarobków, GET /earnings
 - [ ] 8. Rezerwacje: scheduled_at, giełda (scheduled-board, claim), beat: przypomnienie T−60, dyspozycja T−30
 - [ ] 9. Push: PushSender (FCM / logujący fallback), PUT /me/device-tokens

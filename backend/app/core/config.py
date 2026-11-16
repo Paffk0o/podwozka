@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     # Google Maps Platform server key (Routes, Places, Geocoding). Empty = offline fallbacks.
     google_maps_server_key: str | None = None
     quote_ttl_s: int = 300
+    offer_timeout_s: int = 20
     # Keycloak Admin API (service account of the confidential client `podwozka-backend`).
     # Internal address of Keycloak; default: derived from OIDC_ISSUER.
     keycloak_internal_url: str | None = None
