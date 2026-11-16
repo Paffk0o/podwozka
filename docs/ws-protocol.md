@@ -69,10 +69,21 @@ Oferty i zmiany:
 ← {"type": "offer.new", "offer_id": "...", "ride_id": "...", "expires_at": "..."}   // szczegóły: GET /drivers/me/current
 ← {"type": "offer.expired", "offer_id": "..."}
 ← {"type": "ride.status", "ride_id": "...", "status": "cancelled_by_passenger", "at": "..."}
-← {"type": "board.updated", "region_id": "..."}   // giełda rezerwacji się zmieniła (🔜 punkt 8)
+← {"type": "board.updated", "region_id": "..."}   // giełda rezerwacji regionu się zmieniła: GET /drivers/me/scheduled-board
 ```
 
 Akceptacja/odrzucenie oferty zawsze przez REST (`POST /drivers/me/offers/{id}/accept`).
+
+## 4a. Powiadomienia ✅
+
+Do każdego użytkownika (kanał `user:{sub}`), np. przypomnienie o rezerwacji (T−60 min, kierowca), „kierowca przyjął rezerwację” i „szukamy kierowcy” (T−30 min, pasażer):
+
+```json
+← {"type": "notification", "title": "Przypomnienie o rezerwacji", "body": "Odbiór 17.11 08:00: …",
+   "data": {"ride_id": "..."}}
+```
+
+Gdy aplikacja jest zamknięta, ta sama treść pójdzie jako push FCM (🔜 punkt 9).
 
 ## 5. Błędy
 

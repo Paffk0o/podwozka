@@ -1283,8 +1283,8 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "403": {
+            "description": "Brak roli driver albo konto kierowcy nieaktywne"
           }
         },
         "security": [
@@ -1329,11 +1329,14 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "403": {
+            "description": "Brak roli driver albo konto kierowcy nieaktywne"
+          },
+          "404": {
+            "description": "Rezerwacja nie istnieje albo jest w innym regionie"
           },
           "409": {
-            "description": "Niedozwolone przejście statusu / zasób zajęty"
+            "description": "Wziął ją już inny kierowca albo masz rezerwację w tym czasie"
           },
           "422": {
             "description": "Validation Error",

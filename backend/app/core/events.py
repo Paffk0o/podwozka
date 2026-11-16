@@ -23,6 +23,11 @@ def user_channel(user_id: str) -> str:
     return f"user:{user_id}"
 
 
+def board_channel(region_id: object) -> str:
+    """Reservation board of a region (approved drivers of that region listen)."""
+    return f"board:{region_id}"
+
+
 async def publish(channel: str, message: dict[str, Any]) -> None:
     try:
         await get_redis().publish(channel, json.dumps(message, default=str))
