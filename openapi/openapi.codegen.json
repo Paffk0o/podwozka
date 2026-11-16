@@ -606,14 +606,14 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "404": {
+            "description": "Wycena nie istnieje albo nie należy do Ciebie"
           },
           "409": {
-            "description": "Wycena wygasła albo pasażer ma już aktywny kurs"
+            "description": "Wycena wygasła / wykorzystana albo pasażer ma już aktywny kurs"
           },
           "422": {
-            "description": "Numer telefonu niezweryfikowany"
+            "description": "Numer telefonu niezweryfikowany albo płatność online (karta, BLIK — dostępne w etapie 3)"
           }
         }
       },
@@ -676,9 +676,6 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
-          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -727,8 +724,8 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "404": {
+            "description": "Kurs nie istnieje albo nie należy do Ciebie"
           },
           "422": {
             "description": "Validation Error",
@@ -788,8 +785,8 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "404": {
+            "description": "Kurs nie istnieje albo nie należy do Ciebie"
           },
           "409": {
             "description": "Kursu nie można już anulować"
@@ -845,8 +842,8 @@
           "204": {
             "description": "Successful Response"
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "404": {
+            "description": "Kurs nie istnieje albo nie należy do Ciebie"
           },
           "409": {
             "description": "Kurs niezakończony lub już oceniony"

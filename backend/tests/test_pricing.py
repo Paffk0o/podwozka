@@ -1,5 +1,4 @@
 import json
-from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -11,8 +10,6 @@ from httpx import AsyncClient
 
 from app.common.schemas import GeoPoint
 from app.core.config import get_settings
-from app.core.db import get_sessionmaker
-from app.main import app
 from app.modules.pricing import routing
 from app.modules.pricing.calculator import calculate_price, commission, is_night
 from app.modules.pricing.routing import (
@@ -21,8 +18,7 @@ from app.modules.pricing.routing import (
     StraightLineRouting,
     get_routing_provider,
 )
-from app.seed import seed
-from tests.conftest import TokenFactory, auth
+from tests.conftest import KRAKOW, NIEPOLOMICE, WIELICZKA, TokenFactory, auth, place
 
 WARSAW = ZoneInfo("Europe/Warsaw")
 
@@ -135,34 +131,6 @@ def test_provider_selection_depends_on_server_key(monkeypatch: pytest.MonkeyPatc
 
 
 # --- POST /quotes ---
-
-
-class FixedRouting:
-    def __init__(self, route: Route) -> None:
-        self.fixed = route
-
-    async def route(
-        self, origin: GeoPoint, destination: GeoPoint, departure: datetime | None = None
-    ) -> Route:
-        return self.fixed
-
-
-@pytest.fixture
-async def seeded() -> AsyncIterator[None]:
-    async with get_sessionmaker()() as session:
-        await seed(session)
-    app.dependency_overrides[get_routing_provider] = lambda: FixedRouting(Route(10_000, 900))
-    yield
-    app.dependency_overrides.pop(get_routing_provider, None)
-
-
-def place(lat: float, lng: float, address: str = "ul. Testowa 1") -> dict[str, Any]:
-    return {"location": {"lat": lat, "lng": lng}, "address": address}
-
-
-WIELICZKA = place(49.99, 20.06, "Rynek Górny, Wieliczka")
-NIEPOLOMICE = place(50.03, 20.22, "Plac Zwycięstwa, Niepołomice")
-KRAKOW = place(50.06, 19.94, "Rynek Główny, Kraków")
 
 
 def at_local(days: int, hour: int) -> str:

@@ -5,10 +5,12 @@ os.environ.setdefault(
     "DATABASE_URL", "postgresql+asyncpg://podwozka:podwozka@localhost:5432/podwozka_test"
 )
 os.environ.setdefault("OIDC_ISSUER", "http://keycloak.test/realms/podwozka")
+os.environ.setdefault("REDIS_URL", "redis://localhost:6379/15")
 
 import time
 import uuid
 from collections.abc import AsyncIterator, Callable
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -21,11 +23,15 @@ from httpx import ASGITransport, AsyncClient
 from jwt.algorithms import RSAAlgorithm
 from sqlalchemy import text
 
+from app.common.schemas import GeoPoint
 from app.core import security
 from app.core.config import get_settings
-from app.core.db import dispose_engine, get_engine
+from app.core.db import dispose_engine, get_engine, get_sessionmaker
+from app.core.redis import close_redis, get_redis
 from app.main import app
 from app.models import Base
+from app.modules.pricing.routing import Route, get_routing_provider
+from app.seed import seed
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 KID = "test-key-1"
@@ -95,12 +101,14 @@ async def _clean_db() -> AsyncIterator[None]:
     tables = ", ".join(t.name for t in Base.metadata.sorted_tables)
     async with get_engine().begin() as conn:
         await conn.execute(text(f"TRUNCATE {tables} CASCADE"))
+    await get_redis().flushdb()
 
 
 @pytest.fixture(scope="session", autouse=True)
 async def _dispose() -> AsyncIterator[None]:
     yield
     await dispose_engine()
+    await close_redis()
 
 
 @pytest.fixture
@@ -121,3 +129,34 @@ def admin_headers(make_token: TokenFactory) -> dict[str, str]:
 @pytest.fixture
 def passenger_headers(make_token: TokenFactory) -> dict[str, str]:
     return auth(make_token(sub="passenger-1"))
+
+
+class FixedRouting:
+    """Deterministic routing for tests (10 km, 15 min unless told otherwise)."""
+
+    def __init__(self, route: Route | None = None) -> None:
+        self.fixed = route or Route(10_000, 900)
+
+    async def route(
+        self, origin: GeoPoint, destination: GeoPoint, departure: datetime | None = None
+    ) -> Route:
+        return self.fixed
+
+
+@pytest.fixture
+async def seeded() -> AsyncIterator[None]:
+    """Two demo regions with tariffs + fixed routing."""
+    async with get_sessionmaker()() as session:
+        await seed(session)
+    app.dependency_overrides[get_routing_provider] = lambda: FixedRouting()
+    yield
+    app.dependency_overrides.pop(get_routing_provider, None)
+
+
+def place(lat: float, lng: float, address: str = "ul. Testowa 1") -> dict[str, Any]:
+    return {"location": {"lat": lat, "lng": lng}, "address": address}
+
+
+WIELICZKA = place(49.99, 20.06, "Rynek Górny, Wieliczka")
+NIEPOLOMICE = place(50.03, 20.22, "Plac Zwycięstwa, Niepołomice")
+KRAKOW = place(50.06, 19.94, "Rynek Główny, Kraków")

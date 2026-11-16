@@ -32,6 +32,18 @@ async def upsert_me(session: AsyncSession, principal: Principal, data: MeUpsert)
     return user
 
 
+async def ensure_user(session: AsyncSession, principal: Principal) -> User:
+    """The local profile, created from the token if the app never called PUT /me."""
+    user = await session.get(User, principal.sub)
+    if user is None:
+        user = User(
+            id=principal.sub, email=principal.email, full_name=principal.name, phone_verified=False
+        )
+        session.add(user)
+        await session.flush()
+    return user
+
+
 def to_me(user: User, principal: Principal) -> Me:
     return Me(
         id=user.id,
