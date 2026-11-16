@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     # Google Maps Platform server key (Routes, Places, Geocoding). Empty = offline fallbacks.
     google_maps_server_key: str | None = None
     quote_ttl_s: int = 300
+    # Address fallback without a Google key. Nominatim's policy requires an identifying
+    # User-Agent (set NOMINATIM_USER_AGENT to include a contact address) and max 1 request/s.
+    nominatim_url: str = "https://nominatim.openstreetmap.org"
+    nominatim_user_agent: str = "Podwozka-backend/1.0"
 
     # Stripe (test mode). Secret key and webhook secret are added by the payments module.
     stripe_publishable_key: str | None = None
