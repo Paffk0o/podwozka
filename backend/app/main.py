@@ -8,6 +8,7 @@ from fastapi.routing import APIRoute
 
 from app.core.config import get_settings
 from app.core.db import dispose_engine
+from app.core.redis import close_redis
 from app.modules.admin.router import router as admin_router
 from app.modules.drivers.router import router as drivers_router
 from app.modules.payments.router import router as payments_router
@@ -31,6 +32,7 @@ def _operation_id(route: APIRoute) -> str:
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     yield
     await dispose_engine()
+    await close_redis()
 
 
 def create_app() -> FastAPI:
