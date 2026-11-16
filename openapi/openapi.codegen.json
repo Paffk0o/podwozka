@@ -879,9 +879,6 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
-          },
           "404": {
             "description": "Brak wniosku"
           }
@@ -921,18 +918,11 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "409": {
+            "description": "Wniosek jest już wysłany / rozpatrzony"
           },
           "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
+            "description": "Region nie istnieje lub jest nieaktywny"
           }
         },
         "security": [
@@ -970,8 +960,14 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "404": {
+            "description": "Brak wniosku"
+          },
+          "409": {
+            "description": "Wniosek jest już wysłany / rozpatrzony"
+          },
+          "503": {
+            "description": "Magazyn dokumentów nie jest skonfigurowany"
           },
           "422": {
             "description": "Validation Error",
@@ -1026,8 +1022,14 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "404": {
+            "description": "Dokument nie istnieje"
+          },
+          "409": {
+            "description": "Pliku nie ma jeszcze w magazynie"
+          },
+          "503": {
+            "description": "Magazyn dokumentów nie jest skonfigurowany"
           },
           "422": {
             "description": "Validation Error",
@@ -1060,8 +1062,11 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "404": {
+            "description": "Brak wniosku"
+          },
+          "409": {
+            "description": "Wniosek jest już wysłany / rozpatrzony"
           },
           "422": {
             "description": "Brakuje wymaganych dokumentów"
@@ -1784,9 +1789,6 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
-          },
           "422": {
             "description": "Validation Error",
             "content": {
@@ -1834,8 +1836,8 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "404": {
+            "description": "Kierowca / wniosek nie istnieje"
           },
           "422": {
             "description": "Validation Error",
@@ -1894,8 +1896,14 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "404": {
+            "description": "Dokument nie istnieje"
+          },
+          "409": {
+            "description": "Plik nie został jeszcze wysłany"
+          },
+          "503": {
+            "description": "Magazyn dokumentów nie jest skonfigurowany"
           },
           "422": {
             "description": "Validation Error",
@@ -1944,8 +1952,17 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "404": {
+            "description": "Kierowca / wniosek nie istnieje"
+          },
+          "409": {
+            "description": "Niedozwolone w obecnym statusie wniosku"
+          },
+          "502": {
+            "description": "Keycloak nie nadał roli"
+          },
+          "503": {
+            "description": "Konto serwisowe Keycloaka nie jest skonfigurowane"
           },
           "422": {
             "description": "Validation Error",
@@ -2004,8 +2021,11 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "404": {
+            "description": "Kierowca / wniosek nie istnieje"
+          },
+          "409": {
+            "description": "Niedozwolone w obecnym statusie wniosku"
           },
           "422": {
             "description": "Validation Error",
@@ -2064,8 +2084,11 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "404": {
+            "description": "Kierowca / wniosek nie istnieje"
+          },
+          "409": {
+            "description": "Niedozwolone w obecnym statusie wniosku"
           },
           "422": {
             "description": "Validation Error",
