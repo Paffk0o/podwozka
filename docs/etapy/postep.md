@@ -7,12 +7,12 @@ Pamięć między sesjami agenta. Po każdym zmergowanym PR: odhacz zadanie i dop
 ### Krok 0: porządek w repo
 - [x] PR #10 (klient API + zielone CI) zmergowany, #9 zamknięty
 - [ ] PR-y Dependabota: zielone zmergowane; Python 3.15 (#11) i flutter_appauth 13 (#17) zamknięte z komentarzem
-- [ ] `ignore` dla aktualizacji major w `.github/dependabot.yml`
-- [ ] Ochrona `main` (ruleset): statusy Backend, Mobile, Kontrakt API; zakaz force-push; PR wymagany, 0 zatwierdzeń
-- [ ] Ten plik
+- [x] `ignore` dla aktualizacji major w `.github/dependabot.yml` (#23)
+- [x] Ochrona `main` (ruleset): statusy Backend, Mobile, Kontrakt API; zakaz force-push; PR wymagany, 0 zatwierdzeń
+- [x] Ten plik (#23)
 
 ### Zakres
-- [ ] 1. Regiony i cenniki: modele + migracja (PostGIS, wersjonowane cenniki), GET /regions, admin CRUD regionów (GeoJSON) i cenników, seed dwóch gmin
+- [x] 1. Regiony i cenniki: modele + migracja (PostGIS, wersjonowane cenniki), GET /regions, admin CRUD regionów (GeoJSON) i cenników, seed dwóch gmin — #26
 - [ ] 2. Wycena: POST /quotes, RoutingProvider (Google Routes / fallback po prostej × 1,3, 40 km/h), ST_Contains, nocny mnożnik, minimum, ważność 5 min
 - [ ] 3. Adresy: /places/autocomplete, /places/{id}, /places/reverse — Google Places / fallback Nominatim (User-Agent, 1 zapytanie/s, cache)
 - [ ] 4. Kursy pasażera (gotówka): maszyna stanów + ride_events, POST /rides (card/blik → 422), GET /rides, GET /rides/{id}, anulowanie, ocena
