@@ -321,6 +321,8 @@ This endpoint does not need any parameter.
 
 Kursy (filtry)
 
+Najnowsze pierwsze. `date_from`/`date_to` dotyczą chwili zamówienia (`requested_at`, przedział [od, do)) i muszą zawierać strefę czasową. Widok z danymi pasażera i kierowcy, także rozliczenie gotówki (`payment_status`).
+
 ### Example
 ```dart
 import 'package:podwozka_api/api.dart';

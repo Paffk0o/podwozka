@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.schemas import ApiModel, Page
 from app.core.db import SessionDep
-from app.core.errors import STUB_RESPONSES, Responses, not_implemented
+from app.core.errors import Responses
 from app.core.keycloak_admin import IdentityAdmin, get_identity_admin_or_503
 from app.core.security import AdminDep
 from app.modules.drivers import service as drivers_service
@@ -22,6 +22,7 @@ from app.modules.pricing import tariffs
 from app.modules.pricing.schemas import Tariff, TariffCreate
 from app.modules.regions import service as regions_service
 from app.modules.regions.schemas import RegionCreate, RegionDetail, RegionUpdate
+from app.modules.rides import service as rides_service
 from app.modules.rides.schemas import RidePage, RideStatus
 from app.modules.users.models import User
 
@@ -244,9 +245,18 @@ async def admin_create_tariff(
 # --- Rides ---
 
 
-@router.get("/rides", response_model=RidePage, summary="Kursy (filtry)", responses=STUB_RESPONSES)
+@router.get(
+    "/rides",
+    response_model=RidePage,
+    summary="Kursy (filtry)",
+    description="Najnowsze pierwsze. `date_from`/`date_to` dotyczą chwili zamówienia "
+    "(`requested_at`, przedział [od, do)) i muszą zawierać strefę czasową. Widok z danymi "
+    "pasażera i kierowcy, także rozliczenie gotówki (`payment_status`).",
+    responses={422: {"description": "Data bez strefy czasowej albo date_to przed date_from"}},
+)
 async def admin_list_rides(
     principal: AdminDep,
+    session: SessionDep,
     region_id: Annotated[UUID | None, Query()] = None,
     status_filter: Annotated[RideStatus | None, Query(alias="status")] = None,
     date_from: Annotated[datetime | None, Query()] = None,
@@ -254,4 +264,6 @@ async def admin_list_rides(
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> RidePage:
-    not_implemented()
+    return await rides_service.list_all_rides(
+        session, region_id, status_filter, date_from, date_to, limit, offset
+    )

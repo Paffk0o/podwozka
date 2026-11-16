@@ -638,7 +638,7 @@ class AdminApi {
   }
 
   /// Kursy (filtry)
-  ///
+  /// Najnowsze pierwsze. &#x60;date_from&#x60;/&#x60;date_to&#x60; dotyczą chwili zamówienia (&#x60;requested_at&#x60;, przedział [od, do)) i muszą zawierać strefę czasową. Widok z danymi pasażera i kierowcy, także rozliczenie gotówki (&#x60;payment_status&#x60;).
   ///
   /// Parameters:
   /// * [regionId]

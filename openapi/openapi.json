@@ -2399,6 +2399,7 @@
           "admin"
         ],
         "summary": "Kursy (filtry)",
+        "description": "Najnowsze pierwsze. `date_from`/`date_to` dotyczą chwili zamówienia (`requested_at`, przedział [od, do)) i muszą zawierać strefę czasową. Widok z danymi pasażera i kierowcy, także rozliczenie gotówki (`payment_status`).",
         "operationId": "admin_list_rides",
         "security": [
           {
@@ -2508,18 +2509,8 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
-          },
           "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
+            "description": "Data bez strefy czasowej albo date_to przed date_from"
           }
         }
       }
