@@ -19,6 +19,7 @@ from app.core.config import get_settings
 from app.core.db import dispose_engine, get_sessionmaker
 from app.core.redis import close_redis
 from app.modules.dispatch import service as dispatch
+from app.modules.rides import reservations
 
 celery_app = Celery("podwozka", broker=get_settings().redis_url)
 celery_app.conf.update(
@@ -28,6 +29,7 @@ celery_app.conf.update(
     worker_hijack_root_logger=False,
     beat_schedule={
         "dispatch-sweep": {"task": "dispatch.sweep", "schedule": 10.0},
+        "reservations-tick": {"task": "reservations.tick", "schedule": 60.0},
     },
 )
 
@@ -48,6 +50,11 @@ def run[T](fn: Callable[[AsyncSession], Awaitable[T]]) -> T:
 @celery_app.task(name="dispatch.expire_offer")
 def expire_offer(offer_id: str) -> bool:
     return run(lambda session: dispatch.expire_offer(session, uuid.UUID(offer_id)))
+
+
+@celery_app.task(name="reservations.tick")
+def reservations_tick() -> tuple[int, int]:
+    return run(reservations.tick)
 
 
 @celery_app.task(name="dispatch.sweep")

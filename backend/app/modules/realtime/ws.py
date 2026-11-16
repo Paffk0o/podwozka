@@ -91,6 +91,12 @@ class Connection:
 
     async def run(self) -> None:
         await self.pubsub.subscribe(events.user_channel(self.principal.sub))
+        if self.principal.has_role(Role.DRIVER):
+            # Approved drivers also hear about their region's reservation board.
+            async with get_sessionmaker()() as session:
+                profile = await session.get(DriverProfile, self.principal.sub)
+            if profile is not None and profile.status == DriverStatus.APPROVED:
+                await self.pubsub.subscribe(events.board_channel(profile.region_id))
         forwarder = asyncio.create_task(self.forward())
         try:
             await self.receive_loop()

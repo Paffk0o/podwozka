@@ -147,6 +147,15 @@ def transition(
         queue_message(session, events.user_channel(ride.driver_id), message)
 
 
+def board_updated(session: AsyncSession, region_id: uuid.UUID) -> None:
+    """Tell the region's drivers to refresh the reservation board."""
+    queue_message(
+        session,
+        events.board_channel(region_id),
+        {"type": "board.updated", "region_id": str(region_id)},
+    )
+
+
 async def commit(session: AsyncSession) -> None:
     """Commit, then publish the queued notifications."""
     await session.commit()
@@ -241,9 +250,11 @@ async def create_ride(session: AsyncSession, principal: Principal, data: RideCre
     )
     await session.flush()
     passenger = Actor(principal.sub, ActorRole.PASSENGER)
-    transition(
-        session, ride, S.SCHEDULED if ride.scheduled_at else S.DISPATCHING, passenger, at=now
-    )
+    if ride.scheduled_at is not None:
+        transition(session, ride, S.SCHEDULED, passenger, at=now)
+        board_updated(session, ride.region_id)
+    else:
+        transition(session, ride, S.DISPATCHING, passenger, at=now)
     await commit(session)
     return ride
 
@@ -313,6 +324,8 @@ async def cancel_by_passenger(
 
     ride = await get_passenger_ride(session, principal, ride_id, for_update=True)
     ride.cancel_reason = reason
+    if ride.status == S.SCHEDULED:
+        board_updated(session, ride.region_id)
     transition(session, ride, S.CANCELLED_BY_PASSENGER, Actor(principal.sub, ActorRole.PASSENGER))
     offered = await cancel_pending_offers(session, ride)
     await commit(session)

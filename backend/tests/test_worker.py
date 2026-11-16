@@ -12,12 +12,15 @@ from app.modules.dispatch.queue import CeleryQueue
 def test_tasks_run_in_their_own_event_loop() -> None:
     assert worker.sweep() == 0  # nothing to do on an empty database
     assert worker.expire_offer(str(uuid.uuid4())) is False  # unknown offer
+    assert worker.reservations_tick() == (0, 0)
 
 
 def test_beat_runs_the_sweeper_often() -> None:
     schedule = worker.celery_app.conf.beat_schedule
     assert schedule["dispatch-sweep"]["task"] == "dispatch.sweep"
     assert schedule["dispatch-sweep"]["schedule"] <= 15
+    assert schedule["reservations-tick"]["task"] == "reservations.tick"
+    assert schedule["reservations-tick"]["schedule"] == 60
 
 
 async def test_celery_queue_schedules_expiry(monkeypatch: pytest.MonkeyPatch) -> None:

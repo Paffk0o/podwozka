@@ -88,6 +88,7 @@ async def cancel_by_driver(
         service.transition(session, ride, S.SCHEDULED, actor, note=reason)
         ride.driver_id = None
         ride.accepted_at = None
+        service.board_updated(session, ride.region_id)
     else:
         ride.cancel_reason = reason
         service.transition(session, ride, S.CANCELLED_BY_DRIVER, actor, note=reason)

@@ -12,8 +12,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, status
 
 from app.core.db import SessionDep
-from app.core.errors import STUB_RESPONSES, Responses, not_implemented
-from app.core.security import DriverDep, PrincipalDep
+from app.core.errors import Responses
+from app.core.security import PrincipalDep
 from app.modules.dispatch import service as dispatch
 from app.modules.drivers import service
 from app.modules.drivers.schemas import (
@@ -35,6 +35,7 @@ from app.modules.drivers.storage import (
 )
 from app.modules.earnings import service as earnings
 from app.modules.rides import driver_service as driver_rides
+from app.modules.rides import reservations
 from app.modules.rides import service as rides_service
 from app.modules.rides.schemas import CancelRequest, RatingCreate, Ride, RidePage
 
@@ -179,20 +180,30 @@ async def decline_offer(driver: ApprovedDriverDep, session: SessionDep, offer_id
     "/scheduled-board",
     response_model=list[Ride],
     summary="Giełda rezerwacji w moim regionie (nieprzypisane)",
-    responses=STUB_RESPONSES,
+    responses=INACTIVE,
 )
-async def list_scheduled_board(principal: DriverDep) -> list[Ride]:
-    not_implemented()
+async def list_scheduled_board(driver: ApprovedDriverDep, session: SessionDep) -> list[Ride]:
+    return [
+        await rides_service.to_schema(session, ride, "driver")
+        for ride in await reservations.board(session, driver)
+    ]
 
 
 @router.post(
     "/scheduled-board/{ride_id}/claim",
     response_model=Ride,
     summary="Weź rezerwację z giełdy",
-    responses={**STUB_RESPONSES, **CONFLICT},
+    responses={
+        **INACTIVE,
+        404: {"description": "Rezerwacja nie istnieje albo jest w innym regionie"},
+        409: {"description": "Wziął ją już inny kierowca albo masz rezerwację w tym czasie"},
+    },
 )
-async def claim_scheduled_ride(principal: DriverDep, ride_id: UUID) -> Ride:
-    not_implemented()
+async def claim_scheduled_ride(
+    driver: ApprovedDriverDep, session: SessionDep, ride_id: UUID
+) -> Ride:
+    ride = await reservations.claim(session, driver, ride_id)
+    return await rides_service.to_schema(session, ride, "driver")
 
 
 RIDE_NOT_FOUND: Responses = {404: {"description": "Kurs nie istnieje albo nie jest Twój"}}
