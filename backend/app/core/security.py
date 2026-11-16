@@ -57,7 +57,9 @@ class JwksCache:
         self._ttl = ttl
         self._min_refresh = min_refresh
         self._keys: dict[str, jwt.PyJWK] = {}
-        self._fetched_at = 0.0
+        # -inf, not 0.0: time.monotonic() may be smaller than min_refresh right after boot
+        # (fresh VM / container), which would skip the very first fetch.
+        self._fetched_at = float("-inf")
         self._lock = asyncio.Lock()
 
     async def _refresh(self) -> None:
