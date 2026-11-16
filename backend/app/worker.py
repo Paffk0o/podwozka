@@ -19,7 +19,9 @@ from app.core.config import get_settings
 from app.core.db import dispose_engine, get_sessionmaker
 from app.core.redis import close_redis
 from app.modules.dispatch import service as dispatch
+from app.modules.notifications.push import get_push_sender
 from app.modules.rides import reservations
+from app.modules.users import service as users_service
 
 celery_app = Celery("podwozka", broker=get_settings().redis_url)
 celery_app.conf.update(
@@ -50,6 +52,23 @@ def run[T](fn: Callable[[AsyncSession], Awaitable[T]]) -> T:
 @celery_app.task(name="dispatch.expire_offer")
 def expire_offer(offer_id: str) -> bool:
     return run(lambda session: dispatch.expire_offer(session, uuid.UUID(offer_id)))
+
+
+async def deliver_push(
+    session: AsyncSession, user_id: str, title: str, body: str, data: dict[str, str]
+) -> int:
+    """Send to all devices of the user; forget tokens FCM says are dead."""
+    tokens = await users_service.device_tokens(session, user_id)
+    if not tokens:
+        return 0
+    invalid = await asyncio.to_thread(get_push_sender().send, tokens, title, body, data)
+    await users_service.forget_device_tokens(session, invalid)
+    return len(tokens) - len(invalid)
+
+
+@celery_app.task(name="push.send")
+def send_push(user_id: str, title: str, body: str, data: dict[str, str]) -> int:
+    return run(lambda session: deliver_push(session, user_id, title, body, data))
 
 
 @celery_app.task(name="reservations.tick")

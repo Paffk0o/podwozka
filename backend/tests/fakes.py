@@ -41,6 +41,13 @@ class FakeIdentity:
 class FakeQueue:
     def __init__(self) -> None:
         self.expiries: list[tuple[str, float]] = []
+        self.pushes: list[tuple[str, str, str, dict[str, str]]] = []
 
     async def expire_offer_at(self, offer_id: object, delay_s: float) -> None:
         self.expiries.append((str(offer_id), delay_s))
+
+    async def send_push(self, user_id: str, title: str, body: str, data: dict[str, str]) -> None:
+        self.pushes.append((user_id, title, body, data))
+
+    def push_titles(self, user_id: str) -> list[str]:
+        return [title for uid, title, _, _ in self.pushes if uid == user_id]

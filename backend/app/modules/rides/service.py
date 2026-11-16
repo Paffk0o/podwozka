@@ -5,6 +5,7 @@ sets timestamps, writes a `ride_events` row and queues a live notification that 
 after the transaction commits (`commit()`).
 """
 
+import logging
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -40,6 +41,7 @@ from app.modules.users import service as users_service
 from app.modules.users.models import User
 
 S = RideStatus
+log = logging.getLogger(__name__)
 
 ALLOWED_TRANSITIONS: dict[RideStatus, frozenset[RideStatus]] = {
     S.REQUESTED: frozenset({S.DISPATCHING, S.SCHEDULED, S.CANCELLED_BY_PASSENGER}),
@@ -79,6 +81,7 @@ _TIMESTAMPS = {
 }
 
 _OUTBOX = "ride_outbox"
+_PUSH_OUTBOX = "push_outbox"
 
 
 class ActorRole(StrEnum):
@@ -156,11 +159,25 @@ def board_updated(session: AsyncSession, region_id: uuid.UUID) -> None:
     )
 
 
+def queue_push(
+    session: AsyncSession, user_id: str, title: str, body: str, data: dict[str, str]
+) -> None:
+    """Queue a push notification; handed to the worker by `commit()` after a successful commit."""
+    session.info.setdefault(_PUSH_OUTBOX, []).append((user_id, title, body, data))
+
+
 async def commit(session: AsyncSession) -> None:
-    """Commit, then publish the queued notifications."""
+    """Commit, then publish the queued live messages and hand pushes to the worker."""
+    from app.modules.dispatch.queue import get_task_queue  # no import cycle at module load
+
     await session.commit()
     for channel, message in session.info.pop(_OUTBOX, []):
         await events.publish(channel, message)
+    for user_id, title, body, data in session.info.pop(_PUSH_OUTBOX, []):
+        try:
+            await get_task_queue().send_push(user_id, title, body, data)
+        except Exception:  # pragma: no cover - a broker outage must not fail the request
+            log.exception("could not queue push for %s", user_id)
 
 
 async def get_ride(session: AsyncSession, ride_id: uuid.UUID) -> RideRow | None:

@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core import events
 from app.modules.drivers.schemas import DriverRideAction
 from app.modules.earnings import service as earnings
+from app.modules.notifications.service import notify
 from app.modules.rides import service
 from app.modules.rides.models import Ride
 from app.modules.rides.schemas import (
@@ -49,6 +50,15 @@ async def perform_action(
     service.transition(session, ride, ACTION_TARGETS[action], actor)
     if action == DriverRideAction.COMPLETE:
         await earnings.record_completed_ride(session, ride)
+    if action == DriverRideAction.ARRIVED:
+        notify(
+            session,
+            ride.passenger_id,
+            "Kierowca na miejscu",
+            f"Kierowca czeka: {ride.pickup_address}",
+            {"type": "ride.status", "ride_id": str(ride.id), "status": ride.status},
+            push_only=True,
+        )
     await service.commit(session)
     return ride
 

@@ -23,6 +23,7 @@ from app.modules.dispatch.queue import get_task_queue
 from app.modules.drivers import service as drivers_service
 from app.modules.drivers.models import DriverProfile as ProfileRow
 from app.modules.drivers.schemas import DriverCurrentState, DriverStatus, RideOffer
+from app.modules.notifications.service import notify
 from app.modules.pricing.routing import StraightLineRouting
 from app.modules.rides import service as rides
 from app.modules.rides.models import Ride as RideRow
@@ -154,6 +155,14 @@ async def dispatch_next(session: AsyncSession, ride_id: uuid.UUID) -> OfferRow |
                 "expires_at": offer.expires_at,
             },
         )
+        notify(
+            session,
+            candidate.driver_id,
+            "Nowe zlecenie",
+            f"Odbiór: {ride.pickup_address} — masz {int(ttl.total_seconds())} s na decyzję",
+            {"type": "offer.new", "offer_id": str(offer.id), "ride_id": str(ride.id)},
+            push_only=True,
+        )
         await rides.commit(session)
         await get_task_queue().expire_offer_at(offer.id, ttl.total_seconds())
         log.info("ride %s offered to %s", ride.id, candidate.driver_id)
@@ -208,6 +217,14 @@ async def accept_offer(session: AsyncSession, driver: ProfileRow, offer_id: uuid
         session,
         events.ride_channel(ride.id),
         {"type": "ride.driver_assigned", "ride_id": str(ride.id)},
+    )
+    notify(
+        session,
+        ride.passenger_id,
+        "Kierowca w drodze",
+        "Kierowca przyjął Twój kurs — śledź go w aplikacji",
+        {"type": "ride.driver_assigned", "ride_id": str(ride.id)},
+        push_only=True,
     )
     await rides.commit(session)
     await presence.release_offer_lock(driver.user_id)

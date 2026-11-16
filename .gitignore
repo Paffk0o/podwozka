@@ -42,3 +42,6 @@ fastlane/test_output
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
+
+# Klucze montowane do kontenerów (np. Firebase) — nigdy do repo
+secrets/
