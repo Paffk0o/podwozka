@@ -300,9 +300,6 @@
                 }
               }
             }
-          },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
           }
         },
         "security": [
@@ -2136,9 +2133,6 @@
                 }
               }
             }
-          },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
           }
         },
         "security": [
@@ -2174,18 +2168,11 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
-          },
           "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
+            "description": "Niepoprawna granica GeoJSON"
+          },
+          "409": {
+            "description": "Region o tej nazwie / TERYT już istnieje"
           }
         },
         "security": [
@@ -2240,18 +2227,14 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "404": {
+            "description": "Region nie istnieje"
           },
           "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
+            "description": "Niepoprawna granica GeoJSON"
+          },
+          "409": {
+            "description": "Region o tej nazwie / TERYT już istnieje"
           }
         }
       }
@@ -2295,8 +2278,8 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "404": {
+            "description": "Region nie istnieje"
           },
           "422": {
             "description": "Validation Error",
@@ -2354,8 +2337,11 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "404": {
+            "description": "Region nie istnieje"
+          },
+          "409": {
+            "description": "valid_from nie jest późniejsze niż początek obecnej wersji"
           },
           "422": {
             "description": "Validation Error",

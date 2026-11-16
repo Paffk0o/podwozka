@@ -17,7 +17,11 @@ OUT = Path(__file__).resolve().parents[2] / "openapi" / "openapi.json"
 def main() -> None:
     spec = app.openapi()
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(spec, indent=2, ensure_ascii=False, sort_keys=False) + "\n")
+    OUT.write_text(
+        json.dumps(spec, indent=2, ensure_ascii=False, sort_keys=False) + "\n",
+        encoding="utf-8",
+        newline="\n",  # identical bytes on Windows and in CI
+    )
     print(f"Wrote {OUT} ({len(spec['paths'])} paths)")
 
 

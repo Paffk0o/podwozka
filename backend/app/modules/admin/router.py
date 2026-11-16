@@ -8,10 +8,13 @@ from fastapi import APIRouter, Query, status
 from pydantic import Field
 
 from app.common.schemas import ApiModel, Page
-from app.core.errors import STUB_RESPONSES, not_implemented
+from app.core.db import SessionDep
+from app.core.errors import STUB_RESPONSES, Responses, not_implemented
 from app.core.security import AdminDep
 from app.modules.drivers.schemas import DriverProfile, DriverStatus
+from app.modules.pricing import tariffs
 from app.modules.pricing.schemas import Tariff, TariffCreate
+from app.modules.regions import service as regions_service
 from app.modules.regions.schemas import RegionCreate, RegionDetail, RegionUpdate
 from app.modules.rides.schemas import RidePage, RideStatus
 
@@ -113,15 +116,14 @@ async def admin_suspend_driver(
 
 # --- Regions & tariffs ---
 
+NOT_FOUND: Responses = {404: {"description": "Region nie istnieje"}}
+INVALID_AREA: Responses = {422: {"description": "Niepoprawna granica GeoJSON"}}
+DUPLICATE: Responses = {409: {"description": "Region o tej nazwie / TERYT już istnieje"}}
 
-@router.get(
-    "/regions",
-    response_model=list[RegionDetail],
-    summary="Wszystkie regiony",
-    responses=STUB_RESPONSES,
-)
-async def admin_list_regions(principal: AdminDep) -> list[RegionDetail]:
-    not_implemented()
+
+@router.get("/regions", response_model=list[RegionDetail], summary="Wszystkie regiony")
+async def admin_list_regions(principal: AdminDep, session: SessionDep) -> list[RegionDetail]:
+    return await regions_service.list_all_detail(session)
 
 
 @router.post(
@@ -129,32 +131,39 @@ async def admin_list_regions(principal: AdminDep) -> list[RegionDetail]:
     response_model=RegionDetail,
     status_code=status.HTTP_201_CREATED,
     summary="Dodaj region (granica GeoJSON)",
-    responses=STUB_RESPONSES,
+    responses={**INVALID_AREA, **DUPLICATE},
 )
-async def admin_create_region(principal: AdminDep, body: RegionCreate) -> RegionDetail:
-    not_implemented()
+async def admin_create_region(
+    principal: AdminDep, session: SessionDep, body: RegionCreate
+) -> RegionDetail:
+    region = await regions_service.create_region(session, body)
+    return await regions_service.to_detail(session, region)
 
 
 @router.patch(
     "/regions/{region_id}",
     response_model=RegionDetail,
     summary="Edytuj region",
-    responses=STUB_RESPONSES,
+    responses={**NOT_FOUND, **INVALID_AREA, **DUPLICATE},
 )
 async def admin_update_region(
-    principal: AdminDep, region_id: UUID, body: RegionUpdate
+    principal: AdminDep, session: SessionDep, region_id: UUID, body: RegionUpdate
 ) -> RegionDetail:
-    not_implemented()
+    region = await regions_service.update_region(session, region_id, body)
+    return await regions_service.to_detail(session, region)
 
 
 @router.get(
     "/regions/{region_id}/tariffs",
     response_model=list[Tariff],
     summary="Historia cenników regionu (najnowszy pierwszy)",
-    responses=STUB_RESPONSES,
+    responses=NOT_FOUND,
 )
-async def admin_list_tariffs(principal: AdminDep, region_id: UUID) -> list[Tariff]:
-    not_implemented()
+async def admin_list_tariffs(
+    principal: AdminDep, session: SessionDep, region_id: UUID
+) -> list[Tariff]:
+    await regions_service.require_region(session, region_id)
+    return [Tariff.model_validate(t) for t in await tariffs.list_tariffs(session, region_id)]
 
 
 @router.post(
@@ -162,10 +171,16 @@ async def admin_list_tariffs(principal: AdminDep, region_id: UUID) -> list[Tarif
     response_model=Tariff,
     status_code=status.HTTP_201_CREATED,
     summary="Nowa wersja cennika (zamyka poprzednią)",
-    responses=STUB_RESPONSES,
+    responses={
+        **NOT_FOUND,
+        409: {"description": "valid_from nie jest późniejsze niż początek obecnej wersji"},
+    },
 )
-async def admin_create_tariff(principal: AdminDep, region_id: UUID, body: TariffCreate) -> Tariff:
-    not_implemented()
+async def admin_create_tariff(
+    principal: AdminDep, session: SessionDep, region_id: UUID, body: TariffCreate
+) -> Tariff:
+    tariff = await tariffs.create_tariff(session, region_id, body, created_by=principal.sub)
+    return Tariff.model_validate(tariff)
 
 
 # --- Rides ---
