@@ -326,6 +326,35 @@ async def page_rides(
     return RidePage(items=items, total=total, limit=limit, offset=offset)
 
 
+async def list_all_rides(
+    session: AsyncSession,
+    region_id: uuid.UUID | None,
+    ride_status: RideStatus | None,
+    date_from: datetime | None,
+    date_to: datetime | None,
+    limit: int,
+    offset: int,
+) -> RidePage:
+    """Admin view: filters by region, status and order time (`requested_at`, [from, to))."""
+    for value in (date_from, date_to):
+        if value is not None and value.tzinfo is None:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT, "Daty muszą zawierać strefę czasową"
+            )
+    if date_from and date_to and date_to < date_from:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "date_to przed date_from")
+    query = select(RideRow)
+    if region_id is not None:
+        query = query.where(RideRow.region_id == region_id)
+    if ride_status is not None:
+        query = query.where(RideRow.status == ride_status)
+    if date_from is not None:
+        query = query.where(RideRow.requested_at >= date_from)
+    if date_to is not None:
+        query = query.where(RideRow.requested_at < date_to)
+    return await page_rides(session, query, limit, offset, view="admin")
+
+
 async def list_passenger_rides(
     session: AsyncSession, principal: Principal, active: bool | None, limit: int, offset: int
 ) -> RidePage:
