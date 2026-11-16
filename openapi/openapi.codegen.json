@@ -1406,8 +1406,8 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "403": {
+            "description": "Brak roli driver albo konto kierowcy nieaktywne"
           },
           "422": {
             "description": "Validation Error",
@@ -1467,8 +1467,11 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "403": {
+            "description": "Brak roli driver albo konto kierowcy nieaktywne"
+          },
+          "404": {
+            "description": "Kurs nie istnieje albo nie jest Twój"
           },
           "409": {
             "description": "Niedozwolone przejście statusu / zasób zajęty"
@@ -1521,11 +1524,14 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "403": {
+            "description": "Brak roli driver albo konto kierowcy nieaktywne"
+          },
+          "404": {
+            "description": "Kurs nie istnieje albo nie jest Twój"
           },
           "409": {
-            "description": "Niedozwolone przejście statusu / zasób zajęty"
+            "description": "Kurs niezakończony albo nie gotówkowy"
           },
           "422": {
             "description": "Validation Error",
@@ -1546,6 +1552,7 @@
           "driver"
         ],
         "summary": "Anuluj kurs (kierowca)",
+        "description": "Rezerwacja oddana wcześniej niż 30 min przed odbiorem wraca na giełdę (status `scheduled`); w pozostałych przypadkach kurs ma status `cancelled_by_driver`.",
         "operationId": "cancel_driver_ride",
         "security": [
           {
@@ -1585,8 +1592,11 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "403": {
+            "description": "Brak roli driver albo konto kierowcy nieaktywne"
+          },
+          "404": {
+            "description": "Kurs nie istnieje albo nie jest Twój"
           },
           "409": {
             "description": "Niedozwolone przejście statusu / zasób zajęty"
@@ -1642,11 +1652,14 @@
           "204": {
             "description": "Successful Response"
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "403": {
+            "description": "Brak roli driver albo konto kierowcy nieaktywne"
+          },
+          "404": {
+            "description": "Kurs nie istnieje albo nie jest Twój"
           },
           "409": {
-            "description": "Niedozwolone przejście statusu / zasób zajęty"
+            "description": "Kurs niezakończony lub już oceniony"
           },
           "422": {
             "description": "Validation Error",
@@ -1667,6 +1680,7 @@
           "driver"
         ],
         "summary": "Zarobki w okresie",
+        "description": "Dni lokalne (Europe/Warsaw), oba końce włącznie, zakres najwyżej 366 dni.",
         "operationId": "get_driver_earnings",
         "security": [
           {
@@ -1706,18 +1720,11 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "403": {
+            "description": "Brak roli driver albo konto kierowcy nieaktywne"
           },
           "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
+            "description": "Zły zakres dat"
           }
         }
       }
