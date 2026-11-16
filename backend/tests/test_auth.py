@@ -56,10 +56,10 @@ async def test_passenger_cannot_use_driver_endpoints(
     assert response.status_code == 403
 
 
-async def test_admin_role_passes_to_stub(client: AsyncClient, make_token: TokenFactory) -> None:
+async def test_admin_role_is_authorized(client: AsyncClient, make_token: TokenFactory) -> None:
     token = make_token(roles=("admin",), client="admin-panel")
     response = await client.get("/admin/regions", headers=auth(token))
-    assert response.status_code == 501  # authorized; feature not built yet
+    assert response.status_code == 200
 
 
 async def test_jwks_cache_refetches_on_key_rotation() -> None:

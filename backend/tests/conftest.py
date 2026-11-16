@@ -25,6 +25,7 @@ from app.core import security
 from app.core.config import get_settings
 from app.core.db import dispose_engine, get_engine
 from app.main import app
+from app.models import Base
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 KID = "test-key-1"
@@ -91,8 +92,9 @@ def _migrate_db() -> None:
 @pytest.fixture(autouse=True)
 async def _clean_db() -> AsyncIterator[None]:
     yield
+    tables = ", ".join(t.name for t in Base.metadata.sorted_tables)
     async with get_engine().begin() as conn:
-        await conn.execute(text("TRUNCATE users CASCADE"))
+        await conn.execute(text(f"TRUNCATE {tables} CASCADE"))
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -109,3 +111,13 @@ async def client() -> AsyncIterator[AsyncClient]:
 
 def auth(token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def admin_headers(make_token: TokenFactory) -> dict[str, str]:
+    return auth(make_token(sub="admin-1", roles=("admin",), client="admin-panel"))
+
+
+@pytest.fixture
+def passenger_headers(make_token: TokenFactory) -> dict[str, str]:
+    return auth(make_token(sub="passenger-1"))
