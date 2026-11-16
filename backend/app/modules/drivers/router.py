@@ -33,6 +33,8 @@ from app.modules.drivers.storage import (
     DocumentStorage,
     get_storage_or_503,
 )
+from app.modules.earnings import service as earnings
+from app.modules.rides import driver_service as driver_rides
 from app.modules.rides import service as rides_service
 from app.modules.rides.schemas import CancelRequest, RatingCreate, Ride, RidePage
 
@@ -193,72 +195,97 @@ async def claim_scheduled_ride(principal: DriverDep, ride_id: UUID) -> Ride:
     not_implemented()
 
 
+RIDE_NOT_FOUND: Responses = {404: {"description": "Kurs nie istnieje albo nie jest Twój"}}
+
+
 @router.get(
     "/rides",
     response_model=RidePage,
     summary="Moje kursy jako kierowca (aktywne, zaplanowane, historia)",
-    responses=STUB_RESPONSES,
+    responses=INACTIVE,
 )
 async def list_driver_rides(
-    principal: DriverDep,
+    driver: ApprovedDriverDep,
+    session: SessionDep,
     active: Annotated[bool | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> RidePage:
-    not_implemented()
+    return await driver_rides.list_driver_rides(session, driver.user_id, active, limit, offset)
 
 
 @router.post(
     "/rides/{ride_id}/actions",
     response_model=Ride,
     summary="Zmień status kursu (wyjazd, na miejscu, start, koniec)",
-    responses={**STUB_RESPONSES, **CONFLICT},
+    responses={**INACTIVE, **RIDE_NOT_FOUND, **CONFLICT},
 )
 async def perform_ride_action(
-    principal: DriverDep, ride_id: UUID, body: DriverRideActionRequest
+    driver: ApprovedDriverDep, session: SessionDep, ride_id: UUID, body: DriverRideActionRequest
 ) -> Ride:
-    not_implemented()
+    ride = await driver_rides.perform_action(session, driver.user_id, ride_id, body.action)
+    return await rides_service.to_schema(session, ride, "driver")
 
 
 @router.post(
     "/rides/{ride_id}/cash-collected",
     response_model=Ride,
     summary="Potwierdź przyjęcie gotówki",
-    responses={**STUB_RESPONSES, **CONFLICT},
+    responses={
+        **INACTIVE,
+        **RIDE_NOT_FOUND,
+        409: {"description": "Kurs niezakończony albo nie gotówkowy"},
+    },
 )
-async def confirm_cash_collected(principal: DriverDep, ride_id: UUID) -> Ride:
-    not_implemented()
+async def confirm_cash_collected(
+    driver: ApprovedDriverDep, session: SessionDep, ride_id: UUID
+) -> Ride:
+    ride = await driver_rides.confirm_cash(session, driver.user_id, ride_id)
+    return await rides_service.to_schema(session, ride, "driver")
 
 
 @router.post(
     "/rides/{ride_id}/cancel",
     response_model=Ride,
     summary="Anuluj kurs (kierowca)",
-    responses={**STUB_RESPONSES, **CONFLICT},
+    description="Rezerwacja oddana wcześniej niż 30 min przed odbiorem wraca na giełdę "
+    "(status `scheduled`); w pozostałych przypadkach kurs ma status `cancelled_by_driver`.",
+    responses={**INACTIVE, **RIDE_NOT_FOUND, **CONFLICT},
 )
-async def cancel_driver_ride(principal: DriverDep, ride_id: UUID, body: CancelRequest) -> Ride:
-    not_implemented()
+async def cancel_driver_ride(
+    driver: ApprovedDriverDep, session: SessionDep, ride_id: UUID, body: CancelRequest
+) -> Ride:
+    ride = await driver_rides.cancel_by_driver(session, driver.user_id, ride_id, body.reason)
+    return await rides_service.to_schema(session, ride, "driver")
 
 
 @router.post(
     "/rides/{ride_id}/rating",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Oceń pasażera",
-    responses={**STUB_RESPONSES, **CONFLICT},
+    responses={
+        **INACTIVE,
+        **RIDE_NOT_FOUND,
+        409: {"description": "Kurs niezakończony lub już oceniony"},
+    },
 )
-async def rate_passenger(principal: DriverDep, ride_id: UUID, body: RatingCreate) -> None:
-    not_implemented()
+async def rate_passenger(
+    driver: ApprovedDriverDep, session: SessionDep, ride_id: UUID, body: RatingCreate
+) -> None:
+    await driver_rides.rate_passenger(session, driver.user_id, ride_id, body)
 
 
 @router.get(
     "/earnings",
     response_model=EarningsSummary,
     summary="Zarobki w okresie",
-    responses=STUB_RESPONSES,
+    description="Dni lokalne (Europe/Warsaw), oba końce włącznie, zakres najwyżej 366 dni.",
+    responses={**INACTIVE, 422: {"description": "Zły zakres dat"}},
 )
 async def get_driver_earnings(
-    principal: DriverDep,
+    driver: ApprovedDriverDep,
+    session: SessionDep,
     date_from: Annotated[date, Query()],
     date_to: Annotated[date, Query()],
 ) -> EarningsSummary:
-    not_implemented()
+    return await earnings.summary(session, driver.user_id, date_from, date_to)

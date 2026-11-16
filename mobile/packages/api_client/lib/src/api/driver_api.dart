@@ -109,7 +109,7 @@ class DriverApi {
   }
 
   /// Anuluj kurs (kierowca)
-  ///
+  /// Rezerwacja oddana wcześniej niż 30 min przed odbiorem wraca na giełdę (status &#x60;scheduled&#x60;); w pozostałych przypadkach kurs ma status &#x60;cancelled_by_driver&#x60;.
   ///
   /// Parameters:
   /// * [rideId]
@@ -661,7 +661,7 @@ class DriverApi {
   }
 
   /// Zarobki w okresie
-  ///
+  /// Dni lokalne (Europe/Warsaw), oba końce włącznie, zakres najwyżej 366 dni.
   ///
   /// Parameters:
   /// * [dateFrom]

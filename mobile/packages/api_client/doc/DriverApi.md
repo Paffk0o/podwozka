@@ -74,6 +74,8 @@ Name | Type | Description  | Notes
 
 Anuluj kurs (kierowca)
 
+Rezerwacja oddana wcześniej niż 30 min przed odbiorem wraca na giełdę (status `scheduled`); w pozostałych przypadkach kurs ma status `cancelled_by_driver`.
+
 ### Example
 ```dart
 import 'package:podwozka_api/api.dart';
@@ -357,6 +359,8 @@ This endpoint does not need any parameter.
 > EarningsSummary getDriverEarnings(dateFrom, dateTo)
 
 Zarobki w okresie
+
+Dni lokalne (Europe/Warsaw), oba końce włącznie, zakres najwyżej 366 dni.
 
 ### Example
 ```dart
