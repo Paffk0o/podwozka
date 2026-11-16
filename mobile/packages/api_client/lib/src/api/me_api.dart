@@ -227,7 +227,7 @@ class MeApi {
   }
 
   /// Zarejestruj token push (FCM) urządzenia
-  ///
+  /// Wywołuj po zalogowaniu i przy każdej zmianie tokenu (onTokenRefresh).
   ///
   /// Parameters:
   /// * [deviceTokenIn]
