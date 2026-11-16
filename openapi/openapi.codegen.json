@@ -556,11 +556,8 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
-          },
           "422": {
-            "description": "Punkt odbioru poza obsługiwanymi regionami"
+            "description": "Punkt odbioru poza obsługiwanymi regionami, brak cennika, zły termin rezerwacji (30 min - 14 dni) albo cel zbyt blisko"
           }
         },
         "security": [
