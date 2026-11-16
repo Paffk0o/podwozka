@@ -398,8 +398,8 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "503": {
+            "description": "Usługa adresów chwilowo niedostępna"
           },
           "422": {
             "description": "Validation Error",
@@ -461,8 +461,11 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "404": {
+            "description": "Nie znaleziono adresu"
+          },
+          "503": {
+            "description": "Usługa adresów chwilowo niedostępna"
           },
           "422": {
             "description": "Validation Error",
@@ -524,8 +527,11 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "404": {
+            "description": "Nie znaleziono adresu"
+          },
+          "503": {
+            "description": "Usługa adresów chwilowo niedostępna"
           },
           "422": {
             "description": "Validation Error",

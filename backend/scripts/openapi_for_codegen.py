@@ -75,7 +75,7 @@ def convert(node: Any) -> Any:
 
 
 def main() -> None:
-    spec = json.loads(SRC.read_text())
+    spec = json.loads(SRC.read_text(encoding="utf-8"))
     out = convert(spec)
     out["openapi"] = "3.0.3"
     DST.write_text(
