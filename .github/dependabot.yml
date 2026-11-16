@@ -1,4 +1,7 @@
 version: 2
+
+# Aktualizacje major (i Python 3.15) nie przychodzą automatycznie — robimy je świadomie,
+# po przeczytaniu changeloga (zarys, sekcja 10: „Nowe wersje w trakcie semestru”).
 updates:
   - package-ecosystem: uv
     directory: /backend
@@ -7,6 +10,9 @@ updates:
       python:
         patterns: ["*"]
         update-types: [minor, patch]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: pub
     directory: /mobile
@@ -15,15 +21,28 @@ updates:
       dart:
         patterns: ["*"]
         update-types: [minor, patch]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: docker
     directory: /backend
     schedule: { interval: weekly }
+    ignore:
+      # Zostajemy na Pythonie 3.14 do końca semestru.
+      - dependency-name: python
+        versions: [">=3.15"]
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: docker-compose
     directory: /
     schedule: { interval: weekly }
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
+  # Akcje GitHuba: także major (zmiany zwykle tylko w środowisku uruchomieniowym akcji).
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: weekly }
