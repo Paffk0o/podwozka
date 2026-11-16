@@ -4,19 +4,26 @@ from datetime import datetime
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from pydantic import Field
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.schemas import ApiModel, Page
 from app.core.db import SessionDep
 from app.core.errors import STUB_RESPONSES, Responses, not_implemented
+from app.core.keycloak_admin import IdentityAdmin, get_identity_admin_or_503
 from app.core.security import AdminDep
+from app.modules.drivers import service as drivers_service
+from app.modules.drivers.models import DriverProfile as DriverProfileRow
 from app.modules.drivers.schemas import DriverProfile, DriverStatus
+from app.modules.drivers.storage import STORAGE_UNAVAILABLE, DocumentStorage, get_storage_or_503
 from app.modules.pricing import tariffs
 from app.modules.pricing.schemas import Tariff, TariffCreate
 from app.modules.regions import service as regions_service
 from app.modules.regions.schemas import RegionCreate, RegionDetail, RegionUpdate
 from app.modules.rides.schemas import RidePage, RideStatus
+from app.modules.users.models import User
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -43,75 +50,126 @@ class SignedUrl(ApiModel):
 
 # --- Drivers ---
 
+DRIVER_NOT_FOUND: Responses = {404: {"description": "Kierowca / wniosek nie istnieje"}}
+WRONG_STATE: Responses = {409: {"description": "Niedozwolone w obecnym statusie wniosku"}}
 
-@router.get(
-    "/drivers",
-    response_model=AdminDriverPage,
-    summary="Kierowcy / wnioski",
-    responses=STUB_RESPONSES,
-)
+
+async def _admin_driver(session: AsyncSession, profile: DriverProfileRow) -> AdminDriver:
+    base = await drivers_service.to_schema(session, profile)
+    user = await session.get(User, profile.user_id)
+    return AdminDriver(
+        **base.model_dump(),
+        full_name=user.full_name if user else None,
+        email=user.email if user else None,
+        phone=user.phone if user else None,
+        submitted_at=profile.submitted_at,
+    )
+
+
+@router.get("/drivers", response_model=AdminDriverPage, summary="Kierowcy / wnioski")
 async def admin_list_drivers(
     principal: AdminDep,
+    session: SessionDep,
     status_filter: Annotated[DriverStatus | None, Query(alias="status")] = None,
     region_id: Annotated[UUID | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> AdminDriverPage:
-    not_implemented()
+    query = select(DriverProfileRow)
+    if status_filter is not None:
+        query = query.where(DriverProfileRow.status == status_filter)
+    if region_id is not None:
+        query = query.where(DriverProfileRow.region_id == region_id)
+    total = (await session.execute(select(func.count()).select_from(query.subquery()))).scalar_one()
+    rows = await session.execute(
+        query.order_by(
+            DriverProfileRow.submitted_at.desc().nulls_last(), DriverProfileRow.created_at.desc()
+        )
+        .limit(limit)
+        .offset(offset)
+    )
+    items = [await _admin_driver(session, p) for p in rows.scalars()]
+    return AdminDriverPage(items=items, total=total, limit=limit, offset=offset)
 
 
 @router.get(
     "/drivers/{user_id}",
     response_model=AdminDriver,
     summary="Szczegóły kierowcy",
-    responses=STUB_RESPONSES,
+    responses=DRIVER_NOT_FOUND,
 )
-async def admin_get_driver(principal: AdminDep, user_id: str) -> AdminDriver:
-    not_implemented()
+async def admin_get_driver(principal: AdminDep, session: SessionDep, user_id: str) -> AdminDriver:
+    return await _admin_driver(session, await drivers_service.require_profile(session, user_id))
 
 
 @router.get(
     "/drivers/{user_id}/documents/{document_id}/view-url",
     response_model=SignedUrl,
     summary="Krótkotrwały link do podglądu dokumentu",
-    responses=STUB_RESPONSES,
+    responses={
+        404: {"description": "Dokument nie istnieje"},
+        409: {"description": "Plik nie został jeszcze wysłany"},
+        **STORAGE_UNAVAILABLE,
+    },
 )
-async def admin_get_document_url(principal: AdminDep, user_id: str, document_id: UUID) -> SignedUrl:
-    not_implemented()
+async def admin_get_document_url(
+    principal: AdminDep,
+    session: SessionDep,
+    storage: Annotated[DocumentStorage, Depends(get_storage_or_503)],
+    user_id: str,
+    document_id: UUID,
+) -> SignedUrl:
+    url, expires_at = await drivers_service.document_view_url(
+        session, user_id, document_id, storage
+    )
+    return SignedUrl(url=url, expires_at=expires_at)
 
 
 @router.post(
     "/drivers/{user_id}/approve",
     response_model=AdminDriver,
     summary="Zatwierdź kierowcę (nadaje rolę driver w Keycloaku)",
-    responses=STUB_RESPONSES,
+    responses={
+        **DRIVER_NOT_FOUND,
+        **WRONG_STATE,
+        502: {"description": "Keycloak nie nadał roli"},
+        503: {"description": "Konto serwisowe Keycloaka nie jest skonfigurowane"},
+    },
 )
-async def admin_approve_driver(principal: AdminDep, user_id: str) -> AdminDriver:
-    not_implemented()
+async def admin_approve_driver(
+    principal: AdminDep,
+    session: SessionDep,
+    identity: Annotated[IdentityAdmin, Depends(get_identity_admin_or_503)],
+    user_id: str,
+) -> AdminDriver:
+    profile = await drivers_service.approve(session, user_id, identity)
+    return await _admin_driver(session, profile)
 
 
 @router.post(
     "/drivers/{user_id}/reject",
     response_model=AdminDriver,
     summary="Odrzuć wniosek",
-    responses=STUB_RESPONSES,
+    responses={**DRIVER_NOT_FOUND, **WRONG_STATE},
 )
 async def admin_reject_driver(
-    principal: AdminDep, user_id: str, body: ReasonRequest
+    principal: AdminDep, session: SessionDep, user_id: str, body: ReasonRequest
 ) -> AdminDriver:
-    not_implemented()
+    profile = await drivers_service.reject(session, user_id, body.reason)
+    return await _admin_driver(session, profile)
 
 
 @router.post(
     "/drivers/{user_id}/suspend",
     response_model=AdminDriver,
     summary="Zawieś kierowcę",
-    responses=STUB_RESPONSES,
+    responses={**DRIVER_NOT_FOUND, **WRONG_STATE},
 )
 async def admin_suspend_driver(
-    principal: AdminDep, user_id: str, body: ReasonRequest
+    principal: AdminDep, session: SessionDep, user_id: str, body: ReasonRequest
 ) -> AdminDriver:
-    not_implemented()
+    profile = await drivers_service.suspend(session, user_id, body.reason)
+    return await _admin_driver(session, profile)
 
 
 # --- Regions & tariffs ---

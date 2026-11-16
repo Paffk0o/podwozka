@@ -9,10 +9,12 @@ from datetime import date
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, Depends, Query, status
 
+from app.core.db import SessionDep
 from app.core.errors import STUB_RESPONSES, Responses, not_implemented
 from app.core.security import DriverDep, PrincipalDep
+from app.modules.drivers import service
 from app.modules.drivers.schemas import (
     AvailabilityUpdate,
     DocumentUploadRequest,
@@ -24,6 +26,11 @@ from app.modules.drivers.schemas import (
     DriverRideActionRequest,
     EarningsSummary,
 )
+from app.modules.drivers.storage import (
+    STORAGE_UNAVAILABLE,
+    DocumentStorage,
+    get_storage_or_503,
+)
 from app.modules.rides.schemas import CancelRequest, RatingCreate, Ride, RidePage
 
 router = APIRouter(prefix="/drivers/me", tags=["driver"])
@@ -33,27 +40,33 @@ CONFLICT: Responses = {409: {"description": "Niedozwolone przejście statusu / z
 
 # --- Application & documents (applicant, no driver role needed) ---
 
+StorageDep = Annotated[DocumentStorage, Depends(get_storage_or_503)]
+APPLICATION_NOT_FOUND: Responses = {404: {"description": "Brak wniosku"}}
+LOCKED: Responses = {409: {"description": "Wniosek jest już wysłany / rozpatrzony"}}
+
 
 @router.get(
     "",
     response_model=DriverProfile,
     summary="Mój profil kierowcy / status wniosku",
-    responses={**STUB_RESPONSES, 404: {"description": "Brak wniosku"}},
+    responses=APPLICATION_NOT_FOUND,
 )
-async def get_my_driver_profile(principal: PrincipalDep) -> DriverProfile:
-    not_implemented()
+async def get_my_driver_profile(principal: PrincipalDep, session: SessionDep) -> DriverProfile:
+    profile = await service.require_profile(session, principal.sub)
+    return await service.to_schema(session, profile)
 
 
 @router.put(
     "/application",
     response_model=DriverProfile,
     summary="Utwórz / popraw wniosek kierowcy (region, pojazd)",
-    responses=STUB_RESPONSES,
+    responses={**LOCKED, 422: {"description": "Region nie istnieje lub jest nieaktywny"}},
 )
 async def upsert_driver_application(
-    principal: PrincipalDep, body: DriverApplicationUpsert
+    principal: PrincipalDep, session: SessionDep, body: DriverApplicationUpsert
 ) -> DriverProfile:
-    not_implemented()
+    profile = await service.upsert_application(session, principal, body)
+    return await service.to_schema(session, profile)
 
 
 @router.post(
@@ -61,32 +74,44 @@ async def upsert_driver_application(
     response_model=DocumentUploadSlot,
     status_code=status.HTTP_201_CREATED,
     summary="Poproś o link do wysłania dokumentu (Azure Blob SAS)",
-    responses=STUB_RESPONSES,
+    responses={**APPLICATION_NOT_FOUND, **LOCKED, **STORAGE_UNAVAILABLE},
 )
 async def create_document_upload(
-    principal: PrincipalDep, body: DocumentUploadRequest
+    principal: PrincipalDep, session: SessionDep, storage: StorageDep, body: DocumentUploadRequest
 ) -> DocumentUploadSlot:
-    not_implemented()
+    return await service.create_upload_slot(session, principal, body, storage)
 
 
 @router.post(
     "/documents/{document_id}/complete",
     response_model=DriverDocument,
     summary="Potwierdź, że plik został wysłany",
-    responses=STUB_RESPONSES,
+    responses={
+        404: {"description": "Dokument nie istnieje"},
+        409: {"description": "Pliku nie ma jeszcze w magazynie"},
+        **STORAGE_UNAVAILABLE,
+    },
 )
-async def complete_document_upload(principal: PrincipalDep, document_id: UUID) -> DriverDocument:
-    not_implemented()
+async def complete_document_upload(
+    principal: PrincipalDep, session: SessionDep, storage: StorageDep, document_id: UUID
+) -> DriverDocument:
+    document = await service.complete_upload(session, principal, document_id, storage)
+    return service.document_schema(document)
 
 
 @router.post(
     "/application/submit",
     response_model=DriverProfile,
     summary="Wyślij wniosek do weryfikacji",
-    responses={**STUB_RESPONSES, 422: {"description": "Brakuje wymaganych dokumentów"}},
+    responses={
+        **APPLICATION_NOT_FOUND,
+        **LOCKED,
+        422: {"description": "Brakuje wymaganych dokumentów"},
+    },
 )
-async def submit_driver_application(principal: PrincipalDep) -> DriverProfile:
-    not_implemented()
+async def submit_driver_application(principal: PrincipalDep, session: SessionDep) -> DriverProfile:
+    profile = await service.submit_application(session, principal)
+    return await service.to_schema(session, profile)
 
 
 # --- Working as a driver (role driver + status approved) ---

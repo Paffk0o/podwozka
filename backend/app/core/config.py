@@ -34,6 +34,18 @@ class Settings(BaseSettings):
     # Google Maps Platform server key (Routes, Places, Geocoding). Empty = offline fallbacks.
     google_maps_server_key: str | None = None
     quote_ttl_s: int = 300
+    # Keycloak Admin API (service account of the confidential client `podwozka-backend`).
+    # Internal address of Keycloak; default: derived from OIDC_ISSUER.
+    keycloak_internal_url: str | None = None
+    keycloak_backend_client_id: str = "podwozka-backend"
+    keycloak_backend_client_secret: str | None = None
+
+    # Driver documents: Azure Blob Storage (locally Azurite). Public URL = address used in SAS
+    # links handed to the apps (inside Docker the API talks to http://azurite:10000).
+    azure_storage_connection_string: str | None = None
+    azure_storage_container: str = "driver-documents"
+    azure_storage_public_url: str | None = None
+
     # Ordering requires a verified phone (zarys 5.1). Off until SMS verification (SMSAPI) exists.
     require_verified_phone: bool = False
     # Address fallback without a Google key. Nominatim's policy requires an identifying
@@ -43,6 +55,14 @@ class Settings(BaseSettings):
 
     # Stripe (test mode). Secret key and webhook secret are added by the payments module.
     stripe_publishable_key: str | None = None
+
+    @property
+    def keycloak_realm(self) -> str:
+        return self.oidc_issuer.rstrip("/").rsplit("/realms/", 1)[1]
+
+    @property
+    def keycloak_base_url(self) -> str:
+        return self.keycloak_internal_url or self.oidc_issuer.rstrip("/").rsplit("/realms/", 1)[0]
 
     @property
     def jwks_url(self) -> str:

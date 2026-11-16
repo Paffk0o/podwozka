@@ -384,8 +384,11 @@ async def _passenger_info(session: AsyncSession, ride: RideRow) -> RidePassenger
 
 
 async def _driver_info(session: AsyncSession, ride: RideRow) -> RideDriverInfo | None:
-    # Filled in once driver profiles exist (drivers module).
-    return None
+    if ride.driver_id is None:
+        return None
+    from app.modules.drivers import service as drivers_service  # avoid an import cycle
+
+    return await drivers_service.ride_driver_info(session, ride.driver_id)
 
 
 async def to_schema(session: AsyncSession, ride: RideRow, view: str) -> Ride:

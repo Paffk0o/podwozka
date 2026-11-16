@@ -16,6 +16,7 @@ dependencies = [
     "redis>=8.1,<9",
     "sentry-sdk[fastapi]>=2.71,<3",
     "tzdata>=2026.6",  # IANA time zones for zoneinfo (Windows has no system tz database)
+    "azure-storage-blob>=12.31,<13",
 ]
 
 [dependency-groups]
