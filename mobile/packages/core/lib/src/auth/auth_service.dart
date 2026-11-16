@@ -96,8 +96,7 @@ class AppAuthOidcClient implements OidcClient {
     return AuthTokens(
       accessToken: accessToken,
       accessTokenExpiry:
-          response.accessTokenExpirationDateTime ??
-          DateTime.now().add(const Duration(minutes: 5)),
+          response.accessTokenExpirationDateTime ?? DateTime.now().add(const Duration(minutes: 5)),
       refreshToken: response.refreshToken,
       idToken: response.idToken,
     );

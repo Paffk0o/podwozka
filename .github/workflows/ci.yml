@@ -83,7 +83,10 @@ jobs:
       - name: Brak rozjazdu z commitem
         run: |
           if ! git diff --exit-code -- openapi mobile/packages/api_client; then
-            echo "::error::openapi/ lub mobile/packages/api_client nie pasuje do kodu backendu. Uruchom ./scripts/gen-api-client.sh i scommituj wynik."
+            stat=$(git status --porcelain -- openapi mobile/packages/api_client | head -40 | sed -e ':a;N;$!ba;s/\n/%0A/g')
+            diff=$(git diff -- openapi mobile/packages/api_client | head -c 2500 | sed -e 's/%/%25/g' | sed -e ':a;N;$!ba;s/\n/%0A/g')
+            echo "::error title=Kontrakt API nieaktualny::openapi/ lub mobile/packages/api_client nie pasuje do kodu backendu. Uruchom ./scripts/gen-api-client.sh albo wypchnij gałąź regen/** i scommituj wynik.%0A%0A${stat}"
+            echo "::error title=Różnica (początek)::${diff}"
             exit 1
           fi
 

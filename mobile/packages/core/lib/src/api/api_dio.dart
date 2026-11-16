@@ -48,7 +48,9 @@ class AuthInterceptor extends Interceptor {
   Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
     final options = err.requestOptions;
     final isUnauthorized = err.response?.statusCode == 401;
-    if (!isUnauthorized || options.extra[skipAuthKey] == true || options.extra[_retriedKey] == true) {
+    if (!isUnauthorized ||
+        options.extra[skipAuthKey] == true ||
+        options.extra[_retriedKey] == true) {
       handler.next(err);
       return;
     }

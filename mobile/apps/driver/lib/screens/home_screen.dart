@@ -33,7 +33,10 @@ class HomeScreen extends ConsumerWidget {
             data: (p) => Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Cześć, ${p.fullName ?? p.email ?? 'kierowco'}!', style: textTheme.headlineSmall),
+                Text(
+                  'Cześć, ${p.fullName ?? p.email ?? 'kierowco'}!',
+                  style: textTheme.headlineSmall,
+                ),
                 const SizedBox(height: 12),
                 Text(
                   isDriver
