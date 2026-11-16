@@ -21,6 +21,7 @@ from app.core import events
 from app.core.config import get_settings
 from app.core.security import Principal
 from app.modules.pricing.models import QuoteRecord
+from app.modules.pricing.routing import haversine_m
 from app.modules.rides.models import Rating, RideEvent
 from app.modules.rides.models import Ride as RideRow
 from app.modules.rides.schemas import (
@@ -307,10 +308,16 @@ async def list_passenger_rides(
 async def cancel_by_passenger(
     session: AsyncSession, principal: Principal, ride_id: uuid.UUID, reason: str | None
 ) -> RideRow:
+    from app.modules.dispatch import presence
+    from app.modules.dispatch.service import cancel_pending_offers  # avoid an import cycle
+
     ride = await get_passenger_ride(session, principal, ride_id, for_update=True)
     ride.cancel_reason = reason
     transition(session, ride, S.CANCELLED_BY_PASSENGER, Actor(principal.sub, ActorRole.PASSENGER))
+    offered = await cancel_pending_offers(session, ride)
     await commit(session)
+    for driver_id in offered:
+        await presence.release_offer_lock(driver_id)
     return ride
 
 
@@ -371,6 +378,15 @@ def _place(location: Any, address: str, place_id: str | None) -> Place:
 def pickup_point(ride: RideRow) -> GeoPoint:
     lat, lng = wkb_point_latlng(ride.pickup_location)
     return GeoPoint(lat=lat, lng=lng)
+
+
+def destination_point(ride: RideRow) -> GeoPoint:
+    lat, lng = wkb_point_latlng(ride.destination_location)
+    return GeoPoint(lat=lat, lng=lng)
+
+
+def distance_m(a: GeoPoint, b: GeoPoint) -> float:
+    return haversine_m(a, b)
 
 
 async def _passenger_info(session: AsyncSession, ride: RideRow) -> RidePassengerInfo:

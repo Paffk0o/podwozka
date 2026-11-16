@@ -34,6 +34,7 @@ class Principal:
     roles: frozenset[str] = field(default_factory=frozenset)
     email: str | None = None
     name: str | None = None
+    expires_at: float | None = None  # `exp` claim (unix time)
 
     def has_role(self, role: Role) -> bool:
         return role.value in self.roles
@@ -138,6 +139,7 @@ class TokenVerifier:
             roles=frozenset(r for r in roles if isinstance(r, str)),
             email=claims.get("email"),
             name=claims.get("name"),
+            expires_at=float(claims["exp"]),
         )
 
 

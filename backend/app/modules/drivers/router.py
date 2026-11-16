@@ -14,6 +14,7 @@ from fastapi import APIRouter, Depends, Query, status
 from app.core.db import SessionDep
 from app.core.errors import STUB_RESPONSES, Responses, not_implemented
 from app.core.security import DriverDep, PrincipalDep
+from app.modules.dispatch import service as dispatch
 from app.modules.drivers import service
 from app.modules.drivers.schemas import (
     AvailabilityUpdate,
@@ -26,11 +27,13 @@ from app.modules.drivers.schemas import (
     DriverRideActionRequest,
     EarningsSummary,
 )
+from app.modules.drivers.service import ApprovedDriverDep
 from app.modules.drivers.storage import (
     STORAGE_UNAVAILABLE,
     DocumentStorage,
     get_storage_or_503,
 )
+from app.modules.rides import service as rides_service
 from app.modules.rides.schemas import CancelRequest, RatingCreate, Ride, RidePage
 
 router = APIRouter(prefix="/drivers/me", tags=["driver"])
@@ -117,44 +120,57 @@ async def submit_driver_application(principal: PrincipalDep, session: SessionDep
 # --- Working as a driver (role driver + status approved) ---
 
 
+INACTIVE: Responses = {403: {"description": "Brak roli driver albo konto kierowcy nieaktywne"}}
+
+
 @router.get(
     "/current",
     response_model=DriverCurrentState,
     summary="Bieżący stan kierowcy (oferta, aktywny kurs)",
-    responses=STUB_RESPONSES,
+    responses=INACTIVE,
 )
-async def get_driver_current_state(principal: DriverDep) -> DriverCurrentState:
-    not_implemented()
+async def get_driver_current_state(
+    driver: ApprovedDriverDep, session: SessionDep
+) -> DriverCurrentState:
+    return await dispatch.current_state(session, driver)
 
 
 @router.put(
     "/availability",
     response_model=DriverProfile,
     summary="Przejdź online / offline",
-    responses=STUB_RESPONSES,
+    responses=INACTIVE,
 )
-async def set_driver_availability(principal: DriverDep, body: AvailabilityUpdate) -> DriverProfile:
-    not_implemented()
+async def set_driver_availability(
+    driver: ApprovedDriverDep, session: SessionDep, body: AvailabilityUpdate
+) -> DriverProfile:
+    profile = await dispatch.set_availability(session, driver, body.online)
+    return await service.to_schema(session, profile)
 
 
 @router.post(
     "/offers/{offer_id}/accept",
     response_model=Ride,
     summary="Przyjmij ofertę kursu",
-    responses={**STUB_RESPONSES, 409: {"description": "Oferta wygasła lub przyjęta przez innego"}},
+    responses={
+        **INACTIVE,
+        404: {"description": "Oferta nie istnieje"},
+        409: {"description": "Oferta wygasła lub przyjęta przez innego"},
+    },
 )
-async def accept_offer(principal: DriverDep, offer_id: UUID) -> Ride:
-    not_implemented()
+async def accept_offer(driver: ApprovedDriverDep, session: SessionDep, offer_id: UUID) -> Ride:
+    ride = await dispatch.accept_offer(session, driver, offer_id)
+    return await rides_service.to_schema(session, ride, "driver")
 
 
 @router.post(
     "/offers/{offer_id}/decline",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Odrzuć ofertę kursu",
-    responses=STUB_RESPONSES,
+    responses={**INACTIVE, 404: {"description": "Oferta nie istnieje"}},
 )
-async def decline_offer(principal: DriverDep, offer_id: UUID) -> None:
-    not_implemented()
+async def decline_offer(driver: ApprovedDriverDep, session: SessionDep, offer_id: UUID) -> None:
+    await dispatch.decline_offer(session, driver.user_id, offer_id)
 
 
 @router.get(

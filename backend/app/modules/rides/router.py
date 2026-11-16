@@ -8,6 +8,7 @@ from fastapi import APIRouter, Query, status
 from app.core.db import SessionDep
 from app.core.errors import Responses
 from app.core.security import PassengerDep
+from app.modules.dispatch.service import start_dispatch
 from app.modules.rides import service
 from app.modules.rides.schemas import (
     CancelRequest,
@@ -41,6 +42,9 @@ async def create_ride(
     principal: PassengerDep, session: SessionDep, body: RideCreate
 ) -> RideCreated:
     ride = await service.create_ride(session, principal, body)
+    if ride.status == service.S.DISPATCHING:
+        await start_dispatch(session, ride.id)
+        await session.refresh(ride)
     return await service.created_response(session, ride)
 
 

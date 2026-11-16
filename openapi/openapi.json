@@ -1115,8 +1115,8 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "403": {
+            "description": "Brak roli driver albo konto kierowcy nieaktywne"
           }
         },
         "security": [
@@ -1154,8 +1154,8 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "403": {
+            "description": "Brak roli driver albo konto kierowcy nieaktywne"
           },
           "422": {
             "description": "Validation Error",
@@ -1210,8 +1210,11 @@
               }
             }
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "403": {
+            "description": "Brak roli driver albo konto kierowcy nieaktywne"
+          },
+          "404": {
+            "description": "Oferta nie istnieje"
           },
           "409": {
             "description": "Oferta wygasła lub przyjęta przez innego"
@@ -1257,8 +1260,11 @@
           "204": {
             "description": "Successful Response"
           },
-          "501": {
-            "description": "Jeszcze nie zaimplementowane"
+          "403": {
+            "description": "Brak roli driver albo konto kierowcy nieaktywne"
+          },
+          "404": {
+            "description": "Oferta nie istnieje"
           },
           "422": {
             "description": "Validation Error",

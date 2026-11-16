@@ -15,7 +15,17 @@ from app.modules.rides.models import Ride, RideEvent
 from app.modules.users.models import User
 from tests.conftest import KRAKOW, NIEPOLOMICE, WIELICZKA, TokenFactory, auth
 
-pytestmark = pytest.mark.usefixtures("seeded")
+pytestmark = pytest.mark.usefixtures("seeded", "no_dispatch")
+
+
+@pytest.fixture
+def no_dispatch(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Passenger-side tests: rides stay in `dispatching` (dispatch is tested separately)."""
+
+    async def noop(*args: Any) -> None:
+        return None
+
+    monkeypatch.setattr("app.modules.rides.router.start_dispatch", noop)
 
 
 async def quote(

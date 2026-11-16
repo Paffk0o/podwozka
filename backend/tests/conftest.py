@@ -9,7 +9,7 @@ os.environ.setdefault("REDIS_URL", "redis://localhost:6379/15")
 
 import time
 import uuid
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator, Callable, Iterator
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -30,8 +30,10 @@ from app.core.db import dispose_engine, get_engine, get_sessionmaker
 from app.core.redis import close_redis, get_redis
 from app.main import app
 from app.models import Base
+from app.modules.dispatch.queue import set_task_queue
 from app.modules.pricing.routing import Route, get_routing_provider
 from app.seed import seed
+from tests.fakes import FakeQueue
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 KID = "test-key-1"
@@ -160,3 +162,12 @@ def place(lat: float, lng: float, address: str = "ul. Testowa 1") -> dict[str, A
 WIELICZKA = place(49.99, 20.06, "Rynek Górny, Wieliczka")
 NIEPOLOMICE = place(50.03, 20.22, "Plac Zwycięstwa, Niepołomice")
 KRAKOW = place(50.06, 19.94, "Rynek Główny, Kraków")
+
+
+@pytest.fixture(autouse=True)
+def task_queue() -> Iterator[FakeQueue]:
+    """Background jobs are recorded, never sent to Celery."""
+    fake = FakeQueue()
+    set_task_queue(fake)
+    yield fake
+    set_task_queue(None)

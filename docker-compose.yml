@@ -123,6 +123,27 @@ services:
         - action: rebuild
           path: ./backend/uv.lock
 
+  # Celery: offer timeouts (20 s), sweeper, reservations. Same image as the API.
+  worker:
+    build: ./backend
+    command: ["celery", "-A", "app.worker", "worker", "--loglevel=info", "--concurrency=2"]
+    environment: *api-env
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./backend/app
+          target: /app/app
+
+  beat:
+    build: ./backend
+    command: ["celery", "-A", "app.worker", "beat", "--loglevel=info", "--schedule", "/tmp/celerybeat-schedule"]
+    environment: *api-env
+    depends_on:
+      redis: { condition: service_healthy }
+
 volumes:
   pgdata:
   azurite:

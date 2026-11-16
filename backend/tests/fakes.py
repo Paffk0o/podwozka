@@ -36,3 +36,11 @@ class FakeIdentity:
         if self.fail:
             raise IdentityAdminError("keycloak down")
         self.granted.append((user_id, role))
+
+
+class FakeQueue:
+    def __init__(self) -> None:
+        self.expiries: list[tuple[str, float]] = []
+
+    async def expire_offer_at(self, offer_id: object, delay_s: float) -> None:
+        self.expiries.append((str(offer_id), delay_s))

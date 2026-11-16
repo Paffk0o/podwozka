@@ -1,6 +1,7 @@
 """Import every module's ORM models here so Alembic sees the full metadata."""
 
 from app.core.db import Base
+from app.modules.dispatch.models import RideOffer
 from app.modules.drivers.models import DriverDocument, DriverProfile, Vehicle
 from app.modules.pricing.models import QuoteRecord, Tariff
 from app.modules.regions.models import Region
@@ -16,6 +17,7 @@ __all__ = [
     "Region",
     "Ride",
     "RideEvent",
+    "RideOffer",
     "Tariff",
     "User",
     "Vehicle",

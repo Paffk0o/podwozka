@@ -19,7 +19,7 @@ Token **nie** idzie w URL (trafiłby do logów). Pierwsza wiadomość po połąc
 
 Błąd: `← {"type": "error", "code": "unauthorized", ...}` i zamknięcie z kodem **1008**.
 
-Po wygaśnięciu tokenu serwer wysyła `{"type": "token_expired"}` i zamyka połączenie (🔜). Aplikacja odświeża token i łączy się ponownie.
+Po wygaśnięciu tokenu serwer wysyła `{"type": "token_expired"}` i zamyka połączenie (kod 1008) ✅. Aplikacja odświeża token i łączy się ponownie.
 
 ## 2. Utrzymanie połączenia ✅
 
@@ -30,7 +30,7 @@ Po wygaśnięciu tokenu serwer wysyła `{"type": "token_expired"}` i zamyka poł
 
 Aplikacja wysyła `ping` co 25 s. Brak `pong` przez 10 s → ponowne połączenie z backoffem (1, 2, 5, 10, 30 s).
 
-## 3. Pasażer — śledzenie kursu 🔜
+## 3. Pasażer — śledzenie kursu ✅
 
 ```json
 → {"type": "subscribe", "ride_id": "<uuid>"}
@@ -47,12 +47,12 @@ Zdarzenia:
 ← {"type": "ride.driver_location", "ride_id": "...", "location": {"lat": 50.1, "lng": 19.9},
    "heading": 90, "eta_s": 240, "at": "..."}
 ← {"type": "ride.driver_assigned", "ride_id": "..."}      // pobierz szczegóły: GET /rides/{id}
-← {"type": "ride.payment", "ride_id": "...", "payment_status": "paid"}
+← {"type": "ride.payment", "ride_id": "...", "payment_status": "paid"}   // 🔜 etap 3 (Stripe)
 ```
 
 `ride.driver_location` najwyżej co 3 s.
 
-## 4. Kierowca 🔜
+## 4. Kierowca ✅
 
 Pozycja (tylko gdy online; co 3–5 s w ruchu, co 15–30 s na postoju):
 
@@ -61,7 +61,7 @@ Pozycja (tylko gdy online; co 3–5 s w ruchu, co 15–30 s na postoju):
    "speed_mps": 12.5, "accuracy_m": 8, "at": "..."}
 ```
 
-Serwer: `GEOADD drivers:online:{region_id}`, a jeśli kierowca ma aktywny kurs — publikacja `ride.driver_location` na kanale `ride:{id}`.
+Serwer: `GEOADD drivers:online:{region_id}` (+ `driver:loc:{id}` z TTL 120 s — kierowca bez świeżej pozycji nie dostaje ofert), a jeśli kierowca ma aktywny kurs — publikacja `ride.driver_location` na kanale `ride:{id}` (najwyżej co 3 s, `eta_s` szacowane po prostej). Pozycje przyjmowane tylko od kierowcy zatwierdzonego i online (`PUT /drivers/me/availability`), inaczej `error` `forbidden`.
 
 Oferty i zmiany:
 
@@ -69,7 +69,7 @@ Oferty i zmiany:
 ← {"type": "offer.new", "offer_id": "...", "ride_id": "...", "expires_at": "..."}   // szczegóły: GET /drivers/me/current
 ← {"type": "offer.expired", "offer_id": "..."}
 ← {"type": "ride.status", "ride_id": "...", "status": "cancelled_by_passenger", "at": "..."}
-← {"type": "board.updated", "region_id": "..."}   // giełda rezerwacji się zmieniła
+← {"type": "board.updated", "region_id": "..."}   // giełda rezerwacji się zmieniła (🔜 punkt 8)
 ```
 
 Akceptacja/odrzucenie oferty zawsze przez REST (`POST /drivers/me/offers/{id}/accept`).
