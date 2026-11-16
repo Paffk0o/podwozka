@@ -78,7 +78,9 @@ def main() -> None:
     spec = json.loads(SRC.read_text())
     out = convert(spec)
     out["openapi"] = "3.0.3"
-    DST.write_text(json.dumps(out, indent=2, ensure_ascii=False) + "\n")
+    DST.write_text(
+        json.dumps(out, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n"
+    )
     print(f"Wrote {DST}")
 
 

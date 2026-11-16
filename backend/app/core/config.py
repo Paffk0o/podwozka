@@ -31,6 +31,10 @@ class Settings(BaseSettings):
 
     sentry_dsn: str | None = None
 
+    # Google Maps Platform server key (Routes, Places, Geocoding). Empty = offline fallbacks.
+    google_maps_server_key: str | None = None
+    quote_ttl_s: int = 300
+
     # Stripe (test mode). Secret key and webhook secret are added by the payments module.
     stripe_publishable_key: str | None = None
 
