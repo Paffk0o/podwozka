@@ -17,7 +17,7 @@ dependencies = [
     "sentry-sdk[fastapi]>=2.71,<3",
     "tzdata>=2026.6",  # IANA time zones for zoneinfo (Windows has no system tz database)
     "azure-storage-blob>=12.31,<13",
-    "celery[redis]>=5.6,<5.7",
+    "celery[redis]>=5.6,<5.8",
     "firebase-admin>=7.7,<7.8",
 ]
 
