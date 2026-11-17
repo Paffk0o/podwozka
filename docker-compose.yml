@@ -3,6 +3,33 @@
 
 name: podwozka
 
+# One backend image (API, migrations + seed, Celery worker and beat), built once.
+x-backend: &backend
+  build: ./backend
+  image: podwozka-backend:local
+  environment:
+    ENVIRONMENT: local
+    DATABASE_URL: postgresql+asyncpg://podwozka:podwozka@db:5432/podwozka
+    REDIS_URL: redis://redis:6379/0
+    OIDC_ISSUER: http://localhost:8080/realms/podwozka
+    OIDC_JWKS_URL: http://keycloak:8080/realms/podwozka/protocol/openid-connect/certs
+    # dev-cli: tylko lokalnie, do pobierania tokenów curl/Swagger (password grant).
+    OIDC_ALLOWED_CLIENTS: '["passenger-app","driver-app","admin-panel","dev-cli"]'
+    # Keycloak Admin API (service account podwozka-backend; dev secret from the local realm).
+    KEYCLOAK_INTERNAL_URL: http://keycloak:8080
+    KEYCLOAK_BACKEND_CLIENT_SECRET: ${KEYCLOAK_BACKEND_CLIENT_SECRET:-dev-backend-secret}
+    # Azurite's public, documented development account (not a secret). SAS links handed to the
+    # apps use the public address; emulator/phone: `adb reverse tcp:10000 tcp:10000`.
+    AZURE_STORAGE_CONNECTION_STRING: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;"
+    AZURE_STORAGE_PUBLIC_URL: http://localhost:10000/devstoreaccount1
+    GOOGLE_MAPS_SERVER_KEY: ${GOOGLE_MAPS_SERVER_KEY:-}
+    NOMINATIM_USER_AGENT: ${NOMINATIM_USER_AGENT:-Podwozka-backend/1.0}
+    # Push (FCM): put the Firebase service-account JSON in ./secrets/ (git-ignored) and set
+    # FIREBASE_CREDENTIALS_FILE=/run/secrets/firebase-service-account.json in .env.
+    FIREBASE_CREDENTIALS_FILE: ${FIREBASE_CREDENTIALS_FILE:-}
+    STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+    SENTRY_DSN: ${SENTRY_DSN:-}
+
 services:
   db:
     image: postgis/postgis:18-3.6
@@ -80,43 +107,28 @@ services:
       timeout: 3s
       retries: 20
 
+  # Runs once on every `docker compose up`: migrations, then demo data (idempotent: two
+  # municipalities with tariffs; repeated runs change nothing).
   migrate:
-    build: ./backend
-    command: ["alembic", "upgrade", "head"]
-    environment: &api-env
-      ENVIRONMENT: local
-      DATABASE_URL: postgresql+asyncpg://podwozka:podwozka@db:5432/podwozka
-      REDIS_URL: redis://redis:6379/0
-      OIDC_ISSUER: http://localhost:8080/realms/podwozka
-      OIDC_JWKS_URL: http://keycloak:8080/realms/podwozka/protocol/openid-connect/certs
-      # dev-cli: tylko lokalnie, do pobierania tokenów curl/Swagger (password grant).
-      OIDC_ALLOWED_CLIENTS: '["passenger-app","driver-app","admin-panel","dev-cli"]'
-      # Keycloak Admin API (service account podwozka-backend; dev secret from the local realm).
-      KEYCLOAK_INTERNAL_URL: http://keycloak:8080
-      KEYCLOAK_BACKEND_CLIENT_SECRET: ${KEYCLOAK_BACKEND_CLIENT_SECRET:-dev-backend-secret}
-      # Azurite's public, documented development account (not a secret). SAS links handed to the
-      # apps use the public address; emulator/phone: `adb reverse tcp:10000 tcp:10000`.
-      AZURE_STORAGE_CONNECTION_STRING: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;"
-      AZURE_STORAGE_PUBLIC_URL: http://localhost:10000/devstoreaccount1
-      GOOGLE_MAPS_SERVER_KEY: ${GOOGLE_MAPS_SERVER_KEY:-}
-      NOMINATIM_USER_AGENT: ${NOMINATIM_USER_AGENT:-Podwozka-backend/1.0}
-      # Push (FCM): put the Firebase service-account JSON in ./secrets/ (git-ignored) and set
-      # FIREBASE_CREDENTIALS_FILE=/run/secrets/firebase-service-account.json in .env.
-      FIREBASE_CREDENTIALS_FILE: ${FIREBASE_CREDENTIALS_FILE:-}
-      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
-      SENTRY_DSN: ${SENTRY_DSN:-}
+    <<: *backend
+    command: ["sh", "-c", "alembic upgrade head && python scripts/seed.py"]
     depends_on:
       db: { condition: service_healthy }
 
   api:
-    build: ./backend
-    environment: *api-env
+    <<: *backend
     ports: ["8000:8000"]
     depends_on:
       migrate: { condition: service_completed_successfully }
       redis: { condition: service_healthy }
       keycloak: { condition: service_healthy }
       azurite: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 5s
     develop:
       # `docker compose watch` — przeładowanie po zmianie kodu
       watch:
@@ -126,12 +138,12 @@ services:
         - action: rebuild
           path: ./backend/uv.lock
 
-  # Celery: offer timeouts (20 s), sweeper, reservations. Same image as the API.
+  # Celery: offer timeouts (20 s), sweeper, reservations, push.
   worker:
-    build: ./backend
+    <<: *backend
     command: ["celery", "-A", "app.worker", "worker", "--loglevel=info", "--concurrency=2"]
-    environment: *api-env
     volumes:
+      # Optional FCM key: secrets/firebase-service-account.json (see secrets/README.md).
       - ./secrets:/run/secrets:ro
     depends_on:
       migrate: { condition: service_completed_successfully }
@@ -143,10 +155,10 @@ services:
           target: /app/app
 
   beat:
-    build: ./backend
+    <<: *backend
     command: ["celery", "-A", "app.worker", "beat", "--loglevel=info", "--schedule", "/tmp/celerybeat-schedule"]
-    environment: *api-env
     depends_on:
+      migrate: { condition: service_completed_successfully }
       redis: { condition: service_healthy }
 
 volumes:
