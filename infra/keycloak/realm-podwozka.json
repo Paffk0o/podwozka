@@ -242,7 +242,16 @@
       "standardFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": true,
-      "description": "Konto serwisowe backendu: nadawanie roli driver, usuwanie kont. Sekret tylko lokalnie!"
+      "description": "Konto serwisowe backendu: nadawanie roli driver, usuwanie kont. Sekret tylko lokalnie!",
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "basic",
+        "email",
+        "kc-admin-api"
+      ]
     },
     {
       "clientId": "dev-cli",

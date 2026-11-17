@@ -50,6 +50,25 @@ Użytkownicy testowi w realmie `podwozka` (hasło dla wszystkich: `Test1234!`):
 | `kierowca@podwozka.test` | passenger, driver |
 | `admin@podwozka.test` | admin |
 
+### Demo end-to-end (kurs za gotówkę)
+
+Po `docker compose up -d`:
+
+```bash
+uv run --project backend python scripts/demo_flow.py
+```
+
+Skrypt przechodzi cały scenariusz przez prawdziwe API (tokeny z klienta `dev-cli`, bez skrótów do bazy):
+
+1. kierowca składa wniosek w gminie Wieliczka i wysyła 4 dokumenty do Azurite linkami SAS;
+2. admin podgląda dokument i zatwierdza kierowcę (rola `driver` nadana przez Keycloak Admin API);
+3. kierowca przechodzi online i wysyła pozycję przez WebSocket;
+4. pasażer robi wycenę i zamawia kurs za gotówkę, a potem śledzi go przez WebSocket;
+5. kierowca dostaje ofertę, przyjmuje ją, wykonuje dojazd → na miejscu → start → koniec i potwierdza gotówkę;
+6. obie strony wystawiają oceny, a na końcu skrypt sprawdza zarobki kierowcy.
+
+Trwa ok. 10 s. Można go uruchamiać wielokrotnie: wniosek kierowcy idzie tylko przy pierwszym biegu, a niedokończony kurs z przerwanego biegu jest domykany. Kod wyjścia 0 oznacza, że cały scenariusz przeszedł.
+
 ### Backend bez Dockera
 
 ```bash

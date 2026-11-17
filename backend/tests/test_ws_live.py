@@ -3,6 +3,7 @@
 Setup is awaited in the test loop; the TestClient runs the app in its own loop/thread
 (the DB engine and Redis client are per loop, so both work)."""
 
+import asyncio
 import time
 from contextlib import ExitStack
 from typing import Any
@@ -15,6 +16,7 @@ from starlette.websockets import WebSocketDisconnect
 from app.core.redis import get_redis
 from app.main import app
 from app.modules.dispatch import presence
+from app.modules.realtime import ws as ws_module
 from tests.conftest import TokenFactory
 from tests.dispatch_helpers import current, driver_headers, make_driver, order_now, region_id
 
@@ -120,3 +122,35 @@ def test_expired_token_closes_the_connection(make_token: TokenFactory) -> None:
             ws.receive_json()
         assert exc.value.code == 1008
         assert time.monotonic() - started < 5
+
+
+async def test_driver_position_reaches_passenger_right_after_accepting(
+    client: AsyncClient,
+    passenger_headers: dict[str, str],
+    make_token: TokenFactory,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Regression: a "no active ride" context cached before accepting must not hide the
+    driver's position from the passenger after accepting (demo_flow caught a 15 s gap)."""
+    monkeypatch.setattr(ws_module, "IDLE_CONTEXT_TTL_S", 0.3)
+    await make_driver("d1")
+    ride = await order_now(client, passenger_headers)
+    headers = driver_headers(make_token, "d1")
+    driver_token = make_token(sub="d1", roles=("passenger", "driver"), client="driver-app")
+    with TestClient(app) as tc, ExitStack() as stack:
+        driver = connect(stack, tc, driver_token)
+        driver.send_json({"type": "driver.location", "location": {"lat": 49.995, "lng": 20.06}})
+        driver.send_json({"type": "ping"})
+        assert driver.receive_json() == {"type": "pong"}  # context cached: no active ride
+
+        offer = tc.get("/drivers/me/current", headers=headers).json()["pending_offer"]
+        assert (
+            tc.post(f"/drivers/me/offers/{offer['id']}/accept", headers=headers).status_code == 200
+        )
+        passenger = connect(stack, tc, make_token(sub="passenger-1"))
+        passenger.send_json({"type": "subscribe", "ride_id": ride["id"]})
+        passenger.receive_json()
+        await asyncio.sleep(0.4)
+        driver.send_json({"type": "driver.location", "location": {"lat": 49.99, "lng": 20.06}})
+        moved = receive_until(passenger, "ride.driver_location")
+        assert moved["ride_id"] == ride["id"]
