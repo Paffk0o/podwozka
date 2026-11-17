@@ -6,7 +6,7 @@ Pamięć między sesjami agenta. Po każdym zmergowanym PR: odhacz zadanie i dop
 
 ### Krok 0: porządek w repo
 - [x] PR #10 (klient API + zielone CI) zmergowany, #9 zamknięty
-- [ ] PR-y Dependabota: zielone zmergowane; Python 3.15 (#11) i flutter_appauth 13 (#17) zamknięte z komentarzem
+- [x] PR-y Dependabota: zielone zmergowane (#1–#4, #19, #20, #22, #24, #25, #27); Python 3.15 (#11) i flutter_appauth 13 (#17) zamknięte z komentarzem; #5 (upload-artifact 7) i #14 (FastAPI <0.163) wykonane ręcznie w #39
 - [x] `ignore` dla aktualizacji major w `.github/dependabot.yml` (#23)
 - [x] Ochrona `main` (ruleset): statusy Backend, Mobile, Kontrakt API; zakaz force-push; PR wymagany, 0 zatwierdzeń
 - [x] Ten plik (#23)
@@ -27,4 +27,4 @@ Pamięć między sesjami agenta. Po każdym zmergowanym PR: odhacz zadanie i dop
 
 ### Koniec etapu
 - [x] `docker compose up -d` + `demo_flow.py` przechodzi (od zera po `down -v`, 11 s; kolejne biegi 8 s) — #38
-- [ ] Raport dla właściciela
+- [x] Raport dla właściciela (w rozmowie, 17.11.2026)

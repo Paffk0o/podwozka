@@ -24,6 +24,9 @@ updates:
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
+      # mobile/packages/api_client is generated: scripts/gen-api-client.sh sets its codegen
+      # dependencies to `any`; a pinned version there breaks the "Kontrakt API" check.
+      - dependency-name: build_runner
 
   - package-ecosystem: docker
     directory: /backend
