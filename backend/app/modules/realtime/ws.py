@@ -34,7 +34,10 @@ router = APIRouter()
 log = logging.getLogger(__name__)
 
 AUTH_TIMEOUT_S = 10
-DRIVER_CONTEXT_TTL_S = 15
+DRIVER_CONTEXT_TTL_S = 15  # while a ride is active
+IDLE_CONTEXT_TTL_S = 3  # no active ride yet: re-check soon (the driver may accept any moment)
+# Events after which the cached driver context (active ride, ETA target) is stale.
+RIDE_CHANGES = ('"ride.status"', '"ride.driver_assigned"')
 LOCATION_BROADCAST_EVERY_S = 3
 BEFORE_PICKUP = {RideStatus.ACCEPTED, RideStatus.DRIVER_ARRIVING, RideStatus.ARRIVED}
 
@@ -85,7 +88,10 @@ class Connection:
             async with self.lock:
                 message = await self.pubsub.get_message(ignore_subscribe_messages=True, timeout=0.2)
             if message is not None and message.get("type") == "message":
-                await self.ws.send_text(message["data"])
+                data = message["data"]
+                if any(marker in data for marker in RIDE_CHANGES):
+                    self.driver_context = None
+                await self.ws.send_text(data)
             else:
                 await asyncio.sleep(0.01)
 
@@ -162,7 +168,8 @@ class Connection:
 
     async def _driver_context(self) -> DriverContext:
         ctx = self.driver_context
-        if ctx is not None and time.monotonic() - ctx.loaded_at < DRIVER_CONTEXT_TTL_S:
+        ttl = DRIVER_CONTEXT_TTL_S if ctx is not None and ctx.ride_id else IDLE_CONTEXT_TTL_S
+        if ctx is not None and time.monotonic() - ctx.loaded_at < ttl:
             return ctx
         async with get_sessionmaker()() as session:
             profile = await session.get(DriverProfile, self.principal.sub)
