@@ -22,7 +22,7 @@ Pamięć między sesjami agenta. Po każdym zmergowanym PR: odhacz zadanie i dop
 - [x] 8. Rezerwacje: scheduled_at, giełda (scheduled-board, claim), beat: przypomnienie T−60, dyspozycja T−30 — #34
 - [x] 9. Push: PushSender (FCM / logujący fallback), PUT /me/device-tokens — #35
 - [x] 10. Admin — kursy: GET /admin/rides z filtrami — #36
-- [ ] 11. `docker compose up -d` stawia wszystko (migracje → seed idempotentny → API, worker, beat, Keycloak, Azurite)
+- [x] 11. `docker compose up -d` stawia wszystko (migracje → seed idempotentny → API, worker, beat, Keycloak, Azurite) — #37
 - [ ] 12. `scripts/demo_flow.py` — scenariusz end-to-end przez prawdziwe API
 
 ### Koniec etapu

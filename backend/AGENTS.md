@@ -14,7 +14,7 @@ uv run ruff check . && uv run ruff format --check . && uv run mypy app
 uv run python scripts/export_openapi.py   # po zmianie kontraktu (potem ../scripts/gen-api-client.sh)
 ```
 
-Testy używają bazy `podwozka_test` (`DATABASE_URL` w `tests/conftest.py`). Lokalnie: `createdb -h localhost -U podwozka podwozka_test` albo `docker compose exec db createdb -U podwozka podwozka_test`.
+Testy używają bazy `podwozka_test` (`DATABASE_URL` w `tests/conftest.py`) i Redisa w bazie 15. Baza testowa powstaje przy pierwszym starcie kontenera `db` (`infra/postgres/init/02-test-db.sql`); przy starszym wolumenie: `docker compose exec db createdb -U podwozka podwozka_test`.
 
 Token do ręcznych testów (tylko lokalnie, klient `dev-cli`):
 
@@ -31,15 +31,19 @@ app/
   core/        config, db (async SQLAlchemy), security (JWT/role), errors
   common/      wspólne schematy (GeoPoint, Place, Page, MoneyGrosze)
   modules/
-    users/     profil, telefon, tokeny push        ✅ /me (GET, PUT) zaimplementowane
-    regions/   gminy (PostGIS)                      🔜
-    pricing/   cenniki, wyceny                      🔜
-    places/    proxy do Google Places/Geocoding     🔜
-    rides/     kursy pasażera, maszyna stanów       🔜
-    drivers/   wnioski, dokumenty, praca kierowcy   🔜
-    admin/     endpointy panelu                     🔜
-    payments/  Stripe, webhooki                     🔜
-    realtime/  WebSocket /ws                        ✅ auth + ping; reszta 🔜
+    users/          profil, tokeny push                       ✅ (SMS i usuwanie konta 🔜)
+    regions/        gminy (PostGIS)                           ✅
+    pricing/        cenniki, wyceny, RoutingProvider          ✅
+    places/         Google Places / Nominatim                 ✅
+    rides/          maszyna stanów, kursy, rezerwacje, oceny  ✅
+    drivers/        wnioski, dokumenty (Blob SAS), profil     ✅
+    dispatch/       oferty, Redis GEO, obecność kierowców     ✅
+    earnings/       rejestr zarobków (driver_ledger)          ✅
+    notifications/  powiadomienia WS + push (FCM)             ✅
+    admin/          endpointy panelu                          ✅
+    payments/       Stripe, webhooki                          🔜 etap 3
+    realtime/       WebSocket /ws                             ✅
+  worker.py    Celery: zadania i harmonogram beat
   models.py    rejestr modeli dla Alembica (dopisuj nowe!)
 ```
 
