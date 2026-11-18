@@ -36,7 +36,7 @@ Pamięć między sesjami agenta. Po każdym zmergowanym PR: odhacz zadanie i dop
 
 ### Zakres
 - [x] 1. Platformy: `setup_platforms.sh` (UTF-8 na Windows, bez `taskAffinity=""`), android/ios w repo, obie aplikacje na emulatorze, logowanie przez Keycloak (`adb reverse` 8000/8080), `Profile` → wygenerowany `MeApi` — #43
-- [ ] 2. Fundamenty w `core`: klient WebSocket (auth, ping, reconnect z backoffem, subskrypcje), serwis lokalizacji, formatowanie złotówek, błędy API po polsku, ekran uzupełnienia profilu
+- [x] 2. Fundamenty w `core`: klient WebSocket (auth, ping, reconnect z backoffem, subskrypcje), serwis lokalizacji, formatowanie złotówek, błędy API po polsku, ekran uzupełnienia profilu, polska lokalizacja Material — #44
 - [ ] 3. Mapy: flutter_map + kafelki OSM zamiast google_maps_flutter (zarys + AGENTS.md), widget mapy w `core`
 - [ ] 4. Pasażer: skąd/dokąd → wycena → teraz/później → gotówka → oczekiwanie → śledzenie z ETA → podsumowanie i ocena; historia, anulowanie, powrót do aktywnego kursu po restarcie
 - [ ] 5. Kierowca — wniosek: pojazd, region, zdjęcia dokumentów (SAS), status wniosku

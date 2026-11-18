@@ -27,7 +27,10 @@ Riverpod 3: `Notifier`/`AsyncNotifier` + `NotifierProvider`/`AsyncNotifierProvid
 
 ## Rzeczy łatwe do zepsucia
 
-- `Profile`/`myProfileProvider` w `core/lib/src/api/profile.dart` to tymczasowy kod z dnia 1 — po wygenerowaniu klienta zastąp go `MeApi`.
+- Profil: `meProvider` (wygenerowany `MeApi`); ekran główny aplikacji owijaj w `ProfileGate` — bez imienia i telefonu pokazuje formularz. Telefon zapisuj przez `normalizePhone` (E.164).
+- WebSocket: jedno połączenie na aplikację — `podwozkaSocketProvider` (łączy się po zalogowaniu). Kursy śledzisz przez `subscribeRide` (subskrypcje wracają same po reconnect). Po każdym przejściu w `WsConnectionState.connected` odśwież stan z REST.
+- Lokalizacja tylko przez `locationServiceProvider` (`LocationService`), w testach fake. `watch(driverOnline: true)` włącza foreground service — wyłącznie gdy kierowca jest online.
+- Kwoty: `formatMoney(grosze)`; daty: `formatDateTime`; błędy API w UI: `apiErrorMessage(e)` — nie pokazuj `e.toString()`. `initPodwozkaFormatting()` w `main()`.
 - Lokalizacja kierowcy w tle: Android foreground service z powiadomieniem tylko gdy „online”; uprawnienia w `AndroidManifest.xml` i `Info.plist` (opisy po polsku). Testuj na prawdziwym telefonie.
 - Klucz Google Maps dla SDK mobilnego w `AndroidManifest.xml` / `AppDelegate` — z ograniczeniem do pakietu/bundle ID. Klucz serwerowy (Places/Routes) NIGDY w aplikacji.
 - Stripe: `Stripe.publishableKey` z `GET /config`; PaymentSheet dostaje `client_secret` z `POST /rides`. Aplikacja NIE ustala, czy płatność się udała — czeka na `ride.payment` z WebSocket / stan z `GET /rides/{id}`.

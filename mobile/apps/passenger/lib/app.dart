@@ -14,6 +14,9 @@ class PassengerApp extends ConsumerWidget {
       theme: podwozkaTheme(Brightness.light),
       darkTheme: podwozkaTheme(Brightness.dark),
       routerConfig: ref.watch(routerProvider),
+      locale: podwozkaLocale,
+      supportedLocales: podwozkaSupportedLocales,
+      localizationsDelegates: podwozkaLocalizationsDelegates,
       debugShowCheckedModeBanner: false,
     );
   }
