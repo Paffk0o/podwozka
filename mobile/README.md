@@ -37,14 +37,16 @@ Oba wyniki commitujemy (to jednorazowa konfiguracja, potem zwykła praca).
 2. **Android** (emulator lub telefon po USB) — przekieruj porty, żeby `localhost` w telefonie trafiał do komputera:
    ```bash
    adb reverse tcp:8000 tcp:8000 && adb reverse tcp:8080 tcp:8080
+   adb reverse tcp:10000 tcp:10000   # Azurite — zdjęcia dokumentów we wniosku kierowcy
    ```
+   Pozycję emulatora ustawisz poleceniem `adb emu geo fix 20.0553 49.9837` (Wieliczka, gmina z seeda).
    **iOS Simulator** widzi `localhost` komputera bez dodatkowych kroków.
 3. Uruchom:
    ```bash
    cd apps/passenger && flutter run
    cd apps/driver && flutter run
    ```
-4. Zaloguj się: `pasazer@podwozka.test` / `Test1234!` (kierowca: `kierowca@podwozka.test`). Można też założyć konto — mail weryfikacyjny zobaczysz w Mailpit: http://localhost:8025.
+4. Zaloguj się: `pasazer@podwozka.test` / `Test1234!` (kierowca: `kierowca@podwozka.test` — już zatwierdzony; wniosek kierowcy sprawdzisz na nowym koncie). Można też założyć konto — mail weryfikacyjny zobaczysz w Mailpit: http://localhost:8025.
 
 Inny backend (np. staging):
 

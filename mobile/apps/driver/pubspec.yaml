@@ -16,6 +16,9 @@ dependencies:
   go_router: ^18.1.4
   podwozka_core:
     path: ../../packages/core
+  image_picker: ^1.2.4
+  podwozka_api:
+    path: ../../packages/api_client
 
 dev_dependencies:
   flutter_test:
