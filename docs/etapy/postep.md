@@ -41,6 +41,8 @@ Pamięć między sesjami agenta. Po każdym zmergowanym PR: odhacz zadanie i dop
 - [x] 4. Pasażer: skąd/dokąd (GPS, pinezka, wyszukiwarka) → wycena → teraz/później → gotówka (karta/BLIK „wkrótce”) → oczekiwanie → śledzenie z ETA (WS) → podsumowanie i ocena; historia, anulowanie, rezerwacje, powrót do aktywnego kursu po restarcie — #46
 - [x] 5. Kierowca — wniosek: pojazd, gmina, 4 zdjęcia dokumentów (image_picker: aparat/galeria) wysyłane bezpośrednio do Blob Storage linkiem SAS (bez tokenu API), status wniosku, po zatwierdzeniu odświeżenie tokenu i tryb pracy — #47
 - [ ] 6. Kierowca — praca: online (foreground service), oferta 20 s, aktywny kurs + „Nawiguj”, gotówka, ocena pasażera, giełda, zarobki, historia
+  - [x] 6a. online (foreground service z powiadomieniem tylko online, uprawnienia z wyjaśnieniem), oferta z odliczaniem 20 s, aktywny kurs z akcjami, „Nawiguj” (Google Maps/Waze), gotówka, ocena pasażera — #48
+  - [ ] 6b. giełda rezerwacji, zarobki, historia
 - [ ] 7. Testy: jednostkowe (WebSocket, stany kursu), widgetowe kluczowych ekranów z fake'ami; `dart format`, `flutter analyze` czyste
 - [ ] 8. Test akceptacyjny: pełny kurs za gotówkę na dwóch emulatorach, zrzuty w `docs/screenshots/`
 
