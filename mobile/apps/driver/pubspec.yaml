@@ -19,6 +19,7 @@ dependencies:
   image_picker: ^1.2.4
   podwozka_api:
     path: ../../packages/api_client
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   flutter_test:

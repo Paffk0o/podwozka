@@ -5,6 +5,7 @@ import 'package:podwozka_core/podwozka_core.dart';
 
 import 'features/onboarding/providers/onboarding_controller.dart';
 import 'features/onboarding/ui/onboarding_screen.dart';
+import 'features/work/ui/work_screen.dart';
 
 /// Approved driver with the `driver` role in the token → work mode; everyone else → application.
 class HomeScreen extends ConsumerWidget {
@@ -21,22 +22,34 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-/// Work mode (online switch, offers, active ride) — stage 2, point 6.
+/// Work mode: online switch, offers, active ride (board, earnings, history: next PR).
 class WorkScreen extends ConsumerWidget {
   const WorkScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(
-      title: const Text('Podwózka Kierowca'),
-      actions: [
-        IconButton(
-          tooltip: 'Wyloguj',
-          icon: const Icon(Icons.logout),
-          onPressed: () => ref.read(authControllerProvider.notifier).logout(),
-        ),
-      ],
-    ),
-    body: const Center(child: Text('Konto kierowcy aktywne.')),
-  );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final connection = ref.watch(wsConnectionStateProvider).value;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Podwózka Kierowca'),
+        bottom: connection == WsConnectionState.waitingToReconnect
+            ? const PreferredSize(
+                preferredSize: Size.fromHeight(24),
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 4),
+                  child: Text('Łączenie z serwerem…'),
+                ),
+              )
+            : null,
+        actions: [
+          IconButton(
+            tooltip: 'Wyloguj',
+            icon: const Icon(Icons.logout),
+            onPressed: () => ref.read(authControllerProvider.notifier).logout(),
+          ),
+        ],
+      ),
+      body: const WorkPanelScreen(),
+    );
+  }
 }

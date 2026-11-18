@@ -86,5 +86,19 @@
 	<string>Aparat jest potrzebny do zrobienia zdjęć dokumentów do wniosku kierowcy.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Możesz wybrać zdjęcia dokumentów z galerii, aby dołączyć je do wniosku kierowcy.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Gdy jesteś online, Twoja lokalizacja pozwala przydzielać Ci najbliższe kursy i pokazywać pasażerowi, gdzie jesteś.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Gdy jesteś online, lokalizacja jest wysyłana także w tle, żeby pasażer widział, że do niego jedziesz. Po przejściu w tryb offline wysyłanie się kończy.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tel</string>
+		<string>comgooglemaps</string>
+		<string>waze</string>
+	</array>
 </dict>
 </plist>
