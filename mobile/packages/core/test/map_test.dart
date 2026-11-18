@@ -86,7 +86,7 @@ void main() {
     expect(find.byIcon(Icons.trip_origin), findsOneWidget); // pickup
     expect(find.byIcon(Icons.place), findsOneWidget); // destination
     expect(find.byIcon(Icons.local_taxi), findsOneWidget); // driver
-    expect(find.text('OpenStreetMap'), findsOneWidget);
+    expect(find.text('© OpenStreetMap'), findsOneWidget);
     expect(find.byType(PolylineLayer), findsOneWidget);
     expect(tiles.requests, greaterThan(0));
   });
