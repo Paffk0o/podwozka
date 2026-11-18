@@ -103,6 +103,7 @@ class PodwozkaMap extends ConsumerStatefulWidget {
 class _PodwozkaMapState extends ConsumerState<PodwozkaMap> {
   late final MapController _controller = widget.controller ?? MapController();
   bool _ready = false;
+  Size? _lastSize;
 
   List<LatLng> get _content => [...widget.pins.map((p) => p.point), ...widget.route];
 
@@ -110,7 +111,15 @@ class _PodwozkaMapState extends ConsumerState<PodwozkaMap> {
   void didUpdateWidget(covariant PodwozkaMap oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!_ready || !widget.fitToContent) return;
-    if (!_sameContent(oldWidget)) _fit();
+    if (!_sameContent(oldWidget)) _scheduleFit();
+  }
+
+  /// Fit after layout: the map's size may change in the same frame (e.g. a bottom sheet
+  /// grows when a quote appears) and a fit computed for the old size zooms out too far.
+  void _scheduleFit() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _ready) _fit();
+    });
   }
 
   bool _sameContent(PodwozkaMap old) {
@@ -147,6 +156,22 @@ class _PodwozkaMapState extends ConsumerState<PodwozkaMap> {
     final scheme = Theme.of(context).colorScheme;
     final route = widget.route;
     final content = _content;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = constraints.biggest;
+        if (_lastSize != null && _lastSize != size && widget.fitToContent) _scheduleFit();
+        _lastSize = size;
+        return _buildMap(tiles, scheme, route, content);
+      },
+    );
+  }
+
+  Widget _buildMap(
+    MapTilesConfig tiles,
+    ColorScheme scheme,
+    List<LatLng> route,
+    List<LatLng> content,
+  ) {
     return FlutterMap(
       mapController: _controller,
       options: MapOptions(
@@ -201,8 +226,8 @@ class _PodwozkaMapState extends ConsumerState<PodwozkaMap> {
               ),
           ],
         ),
-        SimpleAttributionWidget(
-          source: Text(tiles.attribution),
+        _Attribution(
+          text: '© ${tiles.attribution}',
           alignment: widget.attributionAlignment,
           onTap: () => launchUrl(Uri.parse(tiles.attributionUrl)),
         ),
@@ -238,4 +263,38 @@ class _PinIcon extends StatelessWidget {
     }
     return Semantics(label: pin.label ?? semantics, child: child);
   }
+}
+
+/// Tile attribution required by the OSM tile policy. Shrinks with ellipsis instead of
+/// overflowing on narrow screens / large font sizes.
+class _Attribution extends StatelessWidget {
+  const _Attribution({required this.text, required this.alignment, required this.onTap});
+
+  final String text;
+  final Alignment alignment;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Align(
+    alignment: alignment,
+    child: Padding(
+      padding: const EdgeInsets.all(4),
+      child: Material(
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(4),
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelSmall,
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }
