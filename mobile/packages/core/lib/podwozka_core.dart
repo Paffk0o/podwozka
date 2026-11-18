@@ -2,7 +2,7 @@
 library;
 
 export 'src/api/api_dio.dart';
-export 'src/api/profile.dart';
+export 'src/api/me.dart';
 export 'src/auth/auth_controller.dart';
 export 'src/auth/auth_service.dart';
 export 'src/auth/auth_tokens.dart';

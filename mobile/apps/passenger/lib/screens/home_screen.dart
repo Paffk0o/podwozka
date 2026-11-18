@@ -9,7 +9,7 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profile = ref.watch(myProfileProvider);
+    final profile = ref.watch(meProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Podwózka'),
@@ -43,7 +43,7 @@ class HomeScreen extends ConsumerWidget {
                 const Text('Nie udało się pobrać profilu z API.'),
                 const SizedBox(height: 12),
                 OutlinedButton(
-                  onPressed: () => ref.invalidate(myProfileProvider),
+                  onPressed: () => ref.invalidate(meProvider),
                   child: const Text('Spróbuj ponownie'),
                 ),
               ],
