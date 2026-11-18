@@ -39,7 +39,7 @@ Pamięć między sesjami agenta. Po każdym zmergowanym PR: odhacz zadanie i dop
 - [x] 2. Fundamenty w `core`: klient WebSocket (auth, ping, reconnect z backoffem, subskrypcje), serwis lokalizacji, formatowanie złotówek, błędy API po polsku, ekran uzupełnienia profilu, polska lokalizacja Material — #44
 - [x] 3. Mapy: flutter_map 8.3.2 + latlong2 0.10.1 + kafelki OSM zamiast google_maps_flutter (zarys + AGENTS.md), `PodwozkaMap` w `core`, dekoder polyline, uprawnienie INTERNET w release — #45
 - [x] 4. Pasażer: skąd/dokąd (GPS, pinezka, wyszukiwarka) → wycena → teraz/później → gotówka (karta/BLIK „wkrótce”) → oczekiwanie → śledzenie z ETA (WS) → podsumowanie i ocena; historia, anulowanie, rezerwacje, powrót do aktywnego kursu po restarcie — #46
-- [ ] 5. Kierowca — wniosek: pojazd, region, zdjęcia dokumentów (SAS), status wniosku
+- [x] 5. Kierowca — wniosek: pojazd, gmina, 4 zdjęcia dokumentów (image_picker: aparat/galeria) wysyłane bezpośrednio do Blob Storage linkiem SAS (bez tokenu API), status wniosku, po zatwierdzeniu odświeżenie tokenu i tryb pracy — #47
 - [ ] 6. Kierowca — praca: online (foreground service), oferta 20 s, aktywny kurs + „Nawiguj”, gotówka, ocena pasażera, giełda, zarobki, historia
 - [ ] 7. Testy: jednostkowe (WebSocket, stany kursu), widgetowe kluczowych ekranów z fake'ami; `dart format`, `flutter analyze` czyste
 - [ ] 8. Test akceptacyjny: pełny kurs za gotówkę na dwóch emulatorach, zrzuty w `docs/screenshots/`
