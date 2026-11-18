@@ -46,7 +46,7 @@ Podwózka to system typu Uber/Bolt dla gmin, w których duże platformy nie dzia
 | 2 | PostgreSQL **18.6** zamiast 17 | 18 to najnowsza stabilna gałąź (17 nadal wspierana, ale bez powodu, żeby zaczynać od starszej). 19 jest wciąż w fazie beta. PG 18 jest GA w Azure Database for PostgreSQL. |
 | 3 | **Celery** zamiast ARQ | ARQ jest oficjalnie w trybie „maintenance only”. Celery to dojrzały standard z harmonogramem (beat) potrzebnym do rezerwacji. |
 | 4 | **SonarQube Cloud** (dawniej SonarCloud) | Zmiana nazwy produktu. Darmowy plan: repozytoria prywatne do 50 tys. linii kodu, do 5 użytkowników, analiza PR i gałęzi głównej, domyślny Quality Gate „Sonar way”; publiczne repozytoria bez limitu linii. Wspiera Dart/Flutter (Dart 3–3.13). |
-| 5 | Mapy: **google_maps_flutter** + Google Routes/Places przez backend; bez flutter_map/ORS w MVP | Maps SDK na Androida/iOS jest w cenniku Google bez limitu i bez opłat. Google lepiej geokoduje adresy wiejskie niż Nominatim (którego zasady użycia zabraniają też intensywnego autouzupełniania). Adapter w backendzie pozwala później podmienić dostawcę. |
+| 5 | Mapy w aplikacjach: **flutter_map + kafelki OpenStreetMap** (zmiana z 18.11.2026, wcześniej google_maps_flutter); trasy i adresy nadal przez backend (Google Routes/Places z fallbackiem: linia prosta × 1,3 i Nominatim) | Mapa działa bez klucza API i bez konta rozliczeniowego Google — zespół i prowadzący uruchomią aplikację od razu, a w repo i w aplikacji nie ma klucza do ochrony. Na wiejskich odcinkach OSM jest dokładny. Zasady serwera `tile.openstreetmap.org` wymagają identyfikującego User-Agent i widocznej atrybucji oraz zabraniają dużego ruchu — na produkcję adres kafelków ustawiamy (`--dart-define=MAP_TILE_URL`) na komercyjnego dostawcę kafelków OSM albo własny serwer. Google lepiej geokoduje adresy wiejskie niż Nominatim, dlatego wyszukiwanie adresów zostaje w backendzie za adapterem. |
 | 6 | Panel admina jako **Flutter Web** w tym samym repo | Reużycie pakietu `core` (auth, klient API, modele) bez dokładania nowego frameworka. |
 | 7 | Monorepo przez **Dart pub workspaces** (bez Melos) | Workspaces są wbudowane w Dart i wystarczają do wspólnego pakietu `core`. Melos tylko, jeśli zabraknie skryptów. |
 | 8 | Nawigacja kierowcy przez **przekazanie trasy** do Google Maps/Waze (`url_launcher`) | Własna nawigacja zakręt po zakręcie to osobny produkt; kierowcy i tak jej używają. |
@@ -66,7 +66,7 @@ Redis zostaje (**8.10**). Jeśli licencja (RSALv2/SSPLv1/AGPLv3) budziłaby wąt
 | flutter_riverpod | **3.4.3** | Stan aplikacji, DI | Standard w nowych projektach Flutter, dobra testowalność. |
 | go_router | **18.0.2** | Routing, deep linki, przekierowania zależne od logowania | Oficjalny pakiet zespołu Flutter. |
 | Material 3 | w Flutter SDK | UI | Domyślny system projektowy. |
-| google_maps_flutter | **2.18.2** | Mapa, znaczniki kierowców, trasa | Maps SDK mobilny bez opłat. |
+| flutter_map + latlong2 | **8.3.2** + **0.10.1** | Mapa (kafelki OpenStreetMap), znaczniki, trasa | Bez klucza i bez konta rozliczeniowego; dostawcę kafelków zmienia się jednym parametrem. |
 | geolocator | **14.1.1** | Lokalizacja pasażera i kierowcy (kierowca: Android foreground service) | Najpopularniejszy pakiet lokalizacji z obsługą pracy w tle. |
 | url_launcher | **6.3.3** | Przekazanie trasy do Google Maps/Waze, telefon do pasażera | Oficjalny pakiet. |
 | flutter_appauth | **12.1.0** | OAuth 2.0 / OIDC z PKCE do Keycloaka (systemowa przeglądarka) | Zgodny z RFC 8252 (native apps); Keycloak nie musi znać hasła w aplikacji. |
@@ -124,7 +124,8 @@ Redis zostaje (**8.10**). Jeśli licencja (RSALv2/SSPLv1/AGPLv3) budziłaby wąt
 | Usługa | Wersja | Do czego służy | Dlaczego ta |
 |---|---|---|---|
 | Stripe (tryb testowy) | API wg SDK 16.0.0 | Karta, BLIK, Apple Pay, Google Pay, webhooki | BLIK dostępny w Stripe dla PLN. **Uwaga:** BLIK nie wspiera ręcznego „capture” (blokady środków) — dlatego model „cena z góry” (patrz 4.3). |
-| Google Maps Platform | Maps SDK, Routes API, Places API (New), Geocoding | Mapa, trasa i czas przejazdu do wyceny, podpowiadanie adresów | Maps SDK mobilny bez opłat; pozostałe SKU mają miesięczne darmowe limity (np. Dynamic Maps 10 tys. zdarzeń). Wywołania Routes/Places tylko przez backend (klucz ukryty, cache, limity). |
+| Google Maps Platform | Routes API, Places API (New), Geocoding | Trasa i czas przejazdu do wyceny, podpowiadanie adresów | SKU mają miesięczne darmowe limity. Wywołania tylko przez backend (klucz ukryty, cache, limity); bez klucza backend przechodzi na fallback (linia prosta, Nominatim). |
+| OpenStreetMap (kafelki) | `tile.openstreetmap.org` (dev), na produkcję dostawca kafelków OSM | Podkład mapy w aplikacjach | Bez klucza; wymagany User-Agent z identyfikatorem aplikacji i atrybucja „© OpenStreetMap”. |
 | Firebase Cloud Messaging | HTTP v1 | Push do obu aplikacji | Darmowy. Na iOS wymaga klucza APNs (konto Apple Developer). |
 | SMSAPI.pl | REST | Kod weryfikacyjny telefonu (OTP) | Polski operator; tryb testowy bez wysyłki. Wywołanie przez httpx, bez dodatkowej biblioteki. |
 | SMTP (dowolny dostawca; lokalnie Mailpit) | wersję obrazu Mailpit potwierdzić | E-maile Keycloaka: weryfikacja adresu, reset hasła | Keycloak bez SMTP nie wyśle maila resetu hasła. |
@@ -181,7 +182,8 @@ flowchart LR
     BLOB[("Azure Blob Storage<br/>dokumenty kierowców")]
     ENTRA["Microsoft Entra ID"]
     STRIPE["Stripe"]
-    GMAPS["Google Maps Platform"]
+    GMAPS["Google Maps Platform<br/>Routes, Places"]
+    OSM["OpenStreetMap<br/>kafelki mapy"]
     FCM["Firebase Cloud Messaging"]
     SMS["SMSAPI.pl"]
     SENTRY["Sentry"]
@@ -198,7 +200,7 @@ flowchart LR
     KC --> PG
     API -->|"link SAS"| BLOB
     DA -->|"upload zdjęć"| BLOB
-    PA & DA -->|"Maps SDK"| GMAPS
+    PA & DA -->|"kafelki mapy"| OSM
     API -->|"Routes, Places"| GMAPS
     PA -->|"PaymentSheet"| STRIPE
     API -->|"PaymentIntent"| STRIPE
@@ -367,7 +369,7 @@ Ten sam obraz co na staging (bez przebudowy) + ręczne zatwierdzenie w GitHub En
 
 | Ryzyko | Skutek | Ograniczenie |
 |---|---|---|
-| **Koszty Google Maps** | Rachunek po przekroczeniu darmowych limitów | Mapy mobilne (Maps SDK) bez opłat; Routes/Places tylko przez backend z cache wycen i limitem żądań na użytkownika; autouzupełnianie z debounce i tokenami sesji; budżet i alert w Google Cloud; klucze ograniczone do pakietu/bundle ID; adapter pozwala przejść na OpenRouteService. |
+| **Koszty Google Maps** | Rachunek po przekroczeniu darmowych limitów | Mapa w aplikacjach na kafelkach OSM (bez Google); Routes/Places tylko przez backend z cache wycen i limitem żądań na użytkownika; autouzupełnianie z debounce i tokenami sesji; budżet i alert w Google Cloud; klucze ograniczone do pakietu/bundle ID; adapter pozwala przejść na OpenRouteService. |
 | **Publikacja w App Store** | Brak iOS na demo, odrzucenie w review | Konto Apple Developer na start semestru; TestFlight dla testerów wewnętrznych nie wymaga review; od początku: usuwanie konta w aplikacji, uzasadnienie lokalizacji „zawsze” w aplikacji Kierowca. Płatności za przejazd mogą iść przez Stripe (usługa fizyczna, nie zakup cyfrowy). |
 | **RAM i czas startu Keycloaka** | Bazowo ok. 1,25 GB RAM na instancję; wolny start | Lokalnie `start-dev`, w chmurze obraz zbudowany wcześniej (`kc.sh build`, start `--optimized`), min. 1 replika; zespół z laptopami 8 GB: Keycloak współdzielony na staging zamiast lokalnie. |
 | **Koszty Azure** | Keycloak działający ciągle przekracza darmowy limit ACA (180 tys. vCPU-s/mies.) | Kredyt Azure for Students; scale-to-zero dla API/panelu poza demo; najmniejsza sensowna konfiguracja Keycloaka; alert budżetu. Plan B: jeden VPS z tym samym `docker-compose`. |
@@ -386,7 +388,7 @@ Ten sam obraz co na staging (bez przebudowy) + ręczne zatwierdzenie w GitHub En
 ## Źródła wersji (stan 10.10.2026)
 
 - Flutter/Dart: [Flutter versions (Shorebird)](https://docs.shorebird.dev/getting-started/flutter-version.md), [harmonogram wydań Flutter 2026](https://docs.flutter.dev/install/archive)
-- Pakiety Flutter: [pub.dev](https://pub.dev) (API pakietów: flutter_riverpod, go_router, google_maps_flutter, geolocator, url_launcher, flutter_appauth, flutter_secure_storage, dio, web_socket_channel, flutter_stripe, firebase_messaging, sentry_flutter)
+- Pakiety Flutter: [pub.dev](https://pub.dev) (API pakietów: flutter_riverpod, go_router, flutter_map, latlong2, geolocator, url_launcher, flutter_appauth, flutter_secure_storage, dio, web_socket_channel, flutter_stripe, firebase_messaging, sentry_flutter)
 - Pakiety Python: [PyPI](https://pypi.org) (fastapi, uvicorn, pydantic, sqlalchemy, asyncpg, geoalchemy2, alembic, pyjwt, httpx, celery, redis, stripe, firebase-admin, azure-storage-blob, sentry-sdk, uv, ruff, pytest)
 - Python: [endoflife.date/python](https://endoflife.date/python), [Python 3.15.0](https://www.python.org/downloads/release/python-3150/)
 - PostgreSQL: [postgresql.org](https://www.postgresql.org/) · PostGIS: [pgEdge — PostGIS 3.6.4](https://docs.pgedge.com/postgis/v3-6-4/appendix/postgis-3-6-4/) · Azure PG 18: [Microsoft Tech Community](https://techcommunity.microsoft.com/blog/adforpostgresql/-/4469802)

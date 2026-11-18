@@ -29,7 +29,7 @@ Twoja wiedza o tych bibliotekach może być starsza niż te wersje. Jeśli nie z
 
 - Python 3.14, FastAPI 0.162, Pydantic 2.14, SQLAlchemy 2.1 (async), Alembic 1.20, Celery 5.6, redis-py 8.1, PyJWT 2.15, uv 0.13, ruff 0.17, pytest 9.2
 - PostgreSQL 18 + PostGIS 3.6, Redis 8.10, Keycloak 26.8
-- Flutter 3.47.1 / Dart 3.13, flutter_riverpod 3.4, go_router 18, dio 5.11, flutter_appauth 12.1, flutter_secure_storage 11.2, google_maps_flutter 2.18, geolocator 14.1, flutter_stripe 14.1, firebase_messaging 16.7, web_socket_channel 3.0
+- Flutter 3.47.1 / Dart 3.13, flutter_riverpod 3.4, go_router 18, dio 5.11, flutter_appauth 12.1, flutter_secure_storage 11.2, flutter_map 8.3 + latlong2 0.10 (kafelki OpenStreetMap), geolocator 14.1, url_launcher 6.3, intl 0.20, flutter_stripe 14.1, firebase_messaging 16.7, web_socket_channel 3.0
 
 Nowa zależność: sprawdź, że istnieje na PyPI / pub.dev i jest stabilna (bez beta/rc), napisz w PR, po co jest.
 
