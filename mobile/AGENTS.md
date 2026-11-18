@@ -13,7 +13,7 @@ dart format --set-exit-if-changed . && flutter analyze
 
 ## Wersje (SPRAWDZAJ API, nie zgaduj z pamięci)
 
-Flutter 3.47.1 / Dart 3.13 · flutter_riverpod 3.4 · go_router 18 · dio 5.11 · flutter_appauth 12.1 · flutter_secure_storage 11.2 · google_maps_flutter 2.18 · geolocator 14.1 · url_launcher 6.3 · web_socket_channel 3.0 · flutter_stripe 14.1 · firebase_messaging 16.7 · sentry_flutter 10.0
+Flutter 3.47.1 / Dart 3.13 · flutter_riverpod 3.4 · go_router 18 · dio 5.11 · flutter_appauth 12.1 · flutter_secure_storage 11.2 · flutter_map 8.3 · latlong2 0.10 · geolocator 14.1 · url_launcher 6.3 · web_socket_channel 3.0 · flutter_stripe 14.1 · firebase_messaging 16.7 · sentry_flutter 10.0
 
 Riverpod 3: `Notifier`/`AsyncNotifier` + `NotifierProvider`/`AsyncNotifierProvider`; jeden typ `Ref`; `AsyncValue.value` zwraca `null` zamiast rzucać; `StateProvider`/`StateNotifierProvider` tylko z `package:flutter_riverpod/legacy.dart` — NIE używaj ich w nowym kodzie. Bez code-gen (`riverpod_generator`) — piszemy providery ręcznie.
 
@@ -32,7 +32,7 @@ Riverpod 3: `Notifier`/`AsyncNotifier` + `NotifierProvider`/`AsyncNotifierProvid
 - Lokalizacja tylko przez `locationServiceProvider` (`LocationService`), w testach fake. `watch(driverOnline: true)` włącza foreground service — wyłącznie gdy kierowca jest online.
 - Kwoty: `formatMoney(grosze)`; daty: `formatDateTime`; błędy API w UI: `apiErrorMessage(e)` — nie pokazuj `e.toString()`. `initPodwozkaFormatting()` w `main()`.
 - Lokalizacja kierowcy w tle: Android foreground service z powiadomieniem tylko gdy „online”; uprawnienia w `AndroidManifest.xml` i `Info.plist` (opisy po polsku). Testuj na prawdziwym telefonie.
-- Klucz Google Maps dla SDK mobilnego w `AndroidManifest.xml` / `AppDelegate` — z ograniczeniem do pakietu/bundle ID. Klucz serwerowy (Places/Routes) NIGDY w aplikacji.
+- Mapa: tylko `PodwozkaMap` z `core` (flutter_map + kafelki OSM, bez klucza). Atrybucja „OpenStreetMap” musi być widoczna; User-Agent = identyfikator aplikacji (robi to `mapTilesProvider`). Na produkcję inny serwer kafelków: `--dart-define=MAP_TILE_URL=...`. Trasa z API (`route_polyline`) → `decodePolyline`; bez trasy mapa rysuje linię przerywaną. Klucz Google (Places/Routes) jest tylko w backendzie — NIGDY w aplikacji.
 - Stripe: `Stripe.publishableKey` z `GET /config`; PaymentSheet dostaje `client_secret` z `POST /rides`. Aplikacja NIE ustala, czy płatność się udała — czeka na `ride.payment` z WebSocket / stan z `GET /rides/{id}`.
 - Push (FCM): token rejestruj przez `PUT /me/device-tokens` po zalogowaniu i przy `onTokenRefresh`.
 - Teksty UI po polsku; formaty dat `pl_PL`.
