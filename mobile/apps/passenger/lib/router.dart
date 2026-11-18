@@ -16,6 +16,11 @@ final routerProvider = Provider<GoRouter>(
       subtitle: 'Przejazdy w Twojej gminie — teraz albo na później.',
     ),
     homePath: Routes.home,
-    routes: [GoRoute(path: Routes.home, builder: (_, _) => const HomeScreen())],
+    routes: [
+      GoRoute(
+        path: Routes.home,
+        builder: (_, _) => const ProfileGate(child: HomeScreen()),
+      ),
+    ],
   ),
 );

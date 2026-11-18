@@ -4,8 +4,9 @@ import 'package:podwozka_core/podwozka_core.dart';
 
 import 'app.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initPodwozkaFormatting();
   runApp(
     ProviderScope(
       overrides: [appConfigProvider.overrideWithValue(AppConfig.passenger())],
