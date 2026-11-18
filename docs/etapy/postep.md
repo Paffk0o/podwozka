@@ -28,3 +28,21 @@ Pamięć między sesjami agenta. Po każdym zmergowanym PR: odhacz zadanie i dop
 ### Koniec etapu
 - [x] `docker compose up -d` + `demo_flow.py` przechodzi (od zera po `down -v`, 11 s; kolejne biegi 8 s) — #38
 - [x] Raport dla właściciela (w rozmowie, 17.11.2026)
+
+## Etap 2 — aplikacje Pasażer i Kierowca (Flutter, Android)
+
+### Krok 0: środowisko
+- [x] Flutter 3.47.1, Android SDK 36/37, NDK 28.2 (nowe Android CLI: `android sdk install ndk/28.2.13676358`, akceptacja licencji niepotrzebna); emulator `Pixel_API_36` (na API 37 logowanie nie wraca do aplikacji — znany problem); backend: `docker compose up -d` + `demo_flow.py` ✔
+
+### Zakres
+- [x] 1. Platformy: `setup_platforms.sh` (UTF-8 na Windows, bez `taskAffinity=""`), android/ios w repo, obie aplikacje na emulatorze, logowanie przez Keycloak (`adb reverse` 8000/8080), `Profile` → wygenerowany `MeApi` — #43
+- [ ] 2. Fundamenty w `core`: klient WebSocket (auth, ping, reconnect z backoffem, subskrypcje), serwis lokalizacji, formatowanie złotówek, błędy API po polsku, ekran uzupełnienia profilu
+- [ ] 3. Mapy: flutter_map + kafelki OSM zamiast google_maps_flutter (zarys + AGENTS.md), widget mapy w `core`
+- [ ] 4. Pasażer: skąd/dokąd → wycena → teraz/później → gotówka → oczekiwanie → śledzenie z ETA → podsumowanie i ocena; historia, anulowanie, powrót do aktywnego kursu po restarcie
+- [ ] 5. Kierowca — wniosek: pojazd, region, zdjęcia dokumentów (SAS), status wniosku
+- [ ] 6. Kierowca — praca: online (foreground service), oferta 20 s, aktywny kurs + „Nawiguj”, gotówka, ocena pasażera, giełda, zarobki, historia
+- [ ] 7. Testy: jednostkowe (WebSocket, stany kursu), widgetowe kluczowych ekranów z fake'ami; `dart format`, `flutter analyze` czyste
+- [ ] 8. Test akceptacyjny: pełny kurs za gotówkę na dwóch emulatorach, zrzuty w `docs/screenshots/`
+
+### Koniec etapu
+- [ ] Raport dla właściciela (co działa, uruchomienie od zera, znane problemy, etap 3)

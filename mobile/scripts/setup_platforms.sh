@@ -4,6 +4,7 @@
 #   - http://localhost allowed in DEBUG builds only (local Keycloak/API)
 # Run from mobile/:  ./scripts/setup_platforms.sh     then commit the generated folders.
 set -euo pipefail
+# On Windows (Git Bash) python3 may be the Store stub: run with PYTHON=python.
 cd "$(dirname "$0")/.."
 
 setup_app() {
@@ -11,40 +12,43 @@ setup_app() {
   echo "==> $dir"
   (cd "$dir" && flutter create --org pl.podwozka --project-name "$project" \
       --platforms android,ios --no-pub --no-overwrite .)
-  rm -f "$dir/test/widget_test.dart"   # default counter test from the template
+  rm -f "$dir/test/widget_test.dart" "$dir/README.md"   # template leftovers
 
-  python3 - "$dir" "$scheme" "$display" <<'PY'
+  "${PYTHON:-python3}" - "$dir" "$scheme" "$display" <<'PY'
 import pathlib, re, sys
 app, scheme, display = sys.argv[1], sys.argv[2], sys.argv[3]
 root = pathlib.Path(app)
 
 # --- Android: redirect scheme ---
 gradle = root / "android/app/build.gradle.kts"
-text = gradle.read_text()
+text = gradle.read_text(encoding="utf-8")
 if "appAuthRedirectScheme" not in text:
     text = re.sub(
         r"(defaultConfig\s*\{)",
         r'\1\n        manifestPlaceholders["appAuthRedirectScheme"] = "' + scheme + '"',
         text, count=1,
     )
-    gradle.write_text(text)
+    gradle.write_text(text, encoding="utf-8")
 
 # --- Android: app label ---
 manifest = root / "android/app/src/main/AndroidManifest.xml"
-m = manifest.read_text()
+m = manifest.read_text(encoding="utf-8")
 m = re.sub(r'android:label="[^"]*"', f'android:label="{display}"', m, count=1)
-manifest.write_text(m)
+# flutter_appauth: taskAffinity="" (new Flutter template) breaks the redirect back to the app
+# ("No stored state" in logcat) — see flutter_appauth README, "No Redirect to app after login".
+m = re.sub(r'\s*android:taskAffinity=""', "", m)
+manifest.write_text(m, encoding="utf-8")
 
 # --- Android: cleartext http only in debug builds ---
 debug_manifest = root / "android/app/src/debug/AndroidManifest.xml"
-d = debug_manifest.read_text()
+d = debug_manifest.read_text(encoding="utf-8")
 if "usesCleartextTraffic" not in d:
     d = d.replace("</manifest>", '    <application android:usesCleartextTraffic="true" />\n</manifest>')
-    debug_manifest.write_text(d)
+    debug_manifest.write_text(d, encoding="utf-8")
 
 # --- iOS: URL scheme + display name + local networking (dev) ---
 plist = root / "ios/Runner/Info.plist"
-p = plist.read_text()
+p = plist.read_text(encoding="utf-8")
 if "CFBundleURLSchemes" not in p:
     block = f"""	<key>CFBundleURLTypes</key>
 	<array>
@@ -66,7 +70,7 @@ if "CFBundleURLSchemes" not in p:
     idx = p.rfind("</dict>")
     p = p[:idx] + block + p[idx:]
 p = re.sub(r"(<key>CFBundleDisplayName</key>\s*<string>)[^<]*(</string>)", rf"\g<1>{display}\g<2>", p)
-plist.write_text(p)
+plist.write_text(p, encoding="utf-8")
 print(f"configured {app}: scheme={scheme}")
 PY
 }

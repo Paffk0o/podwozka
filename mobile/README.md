@@ -17,6 +17,8 @@ Wymagane: Flutter **3.47.1**, Android Studio, na Macu Xcode. Sprawdź: `flutter 
 ```bash
 cd mobile
 ./scripts/setup_platforms.sh      # generuje android/ i ios/ + konfiguruje logowanie
+# Windows (Git Bash): PYTHON=python ./scripts/setup_platforms.sh
+# (foldery android/ i ios/ są już w repo — skrypt potrzebny tylko przy ich odtwarzaniu)
 cd .. && ./scripts/gen-api-client.sh   # generuje packages/api_client (wymaga Dockera)
 ```
 
@@ -27,6 +29,11 @@ Oba wyniki commitujemy (to jednorazowa konfiguracja, potem zwykła praca).
 ## Uruchomienie na emulatorze / telefonie
 
 1. Backend lokalnie: `docker compose up -d` w katalogu głównym.
+   **Emulator:** używaj obrazu **Android 16 (API 36)**, np. `Pixel_API_36` (Google Play, x86_64). Na podglądzie
+   Androida 17 (API 37) logowanie nie wraca do aplikacji (`AppAuth: No stored state` w logcat) — system otwiera
+   przekierowanie z Chrome'a w nowym zadaniu. Pierwszy build pobiera NDK; na Windows z nowym Android CLI:
+   `"%LOCALAPPDATA%\Android\sdk\cmdline-tools\latest\bin\android.exe" sdk install ndk/28.2.13676358`.
+   Na świeżym emulatorze najpierw otwórz raz Chrome i zamknij jego kreator powitalny — inaczej przerwie pierwsze logowanie.
 2. **Android** (emulator lub telefon po USB) — przekieruj porty, żeby `localhost` w telefonie trafiał do komputera:
    ```bash
    adb reverse tcp:8000 tcp:8000 && adb reverse tcp:8080 tcp:8080

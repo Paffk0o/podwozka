@@ -10,7 +10,7 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profile = ref.watch(myProfileProvider);
+    final profile = ref.watch(meProvider);
     final isDriver = ref.watch(
       authControllerProvider.select((auth) => auth.value?.hasRole('driver') ?? false),
     );
@@ -48,7 +48,7 @@ class HomeScreen extends ConsumerWidget {
             ),
             loading: () => const CircularProgressIndicator(),
             error: (error, _) => OutlinedButton(
-              onPressed: () => ref.invalidate(myProfileProvider),
+              onPressed: () => ref.invalidate(meProvider),
               child: const Text('Nie udało się pobrać profilu — spróbuj ponownie'),
             ),
           ),
