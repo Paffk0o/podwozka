@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:podwozka_core/podwozka_core.dart';
 import 'package:podwozka_api/podwozka_api.dart';
 import 'package:podwozka_driver/features/onboarding/data/document_picker.dart';
 import 'package:podwozka_driver/features/onboarding/data/onboarding_repository.dart';
@@ -316,7 +317,7 @@ void main() {
           onboardingRepositoryProvider.overrideWithValue(repo),
           documentPickerProvider.overrideWithValue(FakePicker()),
         ],
-        child: const MaterialApp(home: OnboardingScreen()),
+        child: MaterialApp(theme: podwozkaTheme(Brightness.light), home: const OnboardingScreen()),
       ),
     );
     await tester.pumpAndSettle();

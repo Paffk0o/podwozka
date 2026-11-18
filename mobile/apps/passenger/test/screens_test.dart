@@ -47,11 +47,12 @@ Future<ProviderContainer> pumpHome(WidgetTester tester, FakePassengerRepository 
           ),
         ),
       ],
-      child: const MaterialApp(
+      child: MaterialApp(
+        theme: podwozkaTheme(Brightness.light),
         locale: podwozkaLocale,
         supportedLocales: podwozkaSupportedLocales,
         localizationsDelegates: podwozkaLocalizationsDelegates,
-        home: HomeScreen(),
+        home: const HomeScreen(),
       ),
     ),
   );
