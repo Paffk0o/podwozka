@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -57,6 +59,18 @@ String locationAccessMessage(LocationAccess access) => switch (access) {
     'Lokalizacja w telefonie jest wyłączona. Włącz GPS i spróbuj ponownie.',
 };
 
+/// The position stream stopped: GPS switched off or permission withdrawn while watching.
+class LocationUnavailableException implements Exception {
+  const LocationUnavailableException(this.reason);
+  final LocationAccess reason;
+
+  /// Polish text for the UI.
+  String get message => locationAccessMessage(reason);
+
+  @override
+  String toString() => 'LocationUnavailableException($reason)';
+}
+
 /// Location behind an interface so widgets and logic can be tested with a fake.
 abstract interface class LocationService {
   /// Checks and, if needed, asks for permission (while the app is in use).
@@ -67,7 +81,7 @@ abstract interface class LocationService {
 
   /// Continuous updates. With [driverOnline] on Android a foreground service with a
   /// visible notification keeps updates flowing when the app is in the background —
-  /// only use it while the driver is „online”.
+  /// only use it while the driver is „online”. Errors: [LocationUnavailableException].
   Stream<LocationFix> watch({bool driverOnline = false});
 
   /// Opens the system settings (after [LocationAccess.deniedForever]).
@@ -109,7 +123,21 @@ class GeolocatorLocationService implements LocationService {
 
   @override
   Stream<LocationFix> watch({bool driverOnline = false}) =>
-      Geolocator.getPositionStream(locationSettings: _settings(driverOnline)).map(_fix);
+      Geolocator.getPositionStream(locationSettings: _settings(driverOnline))
+          .map(_fix)
+          .transform(
+            StreamTransformer.fromHandlers(
+              handleError: (error, stack, sink) => sink.addError(_unavailable(error), stack),
+            ),
+          );
+
+  static Object _unavailable(Object error) => switch (error) {
+    LocationServiceDisabledException() => const LocationUnavailableException(
+      LocationAccess.serviceDisabled,
+    ),
+    PermissionDeniedException() => const LocationUnavailableException(LocationAccess.denied),
+    _ => error,
+  };
 
   @override
   Future<void> openSettings() async {

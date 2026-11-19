@@ -31,6 +31,7 @@ class LocationPublisher {
   LocationFix? _last;
   DateTime? _lastSentAt;
   final _fixes = StreamController<LocationFix>.broadcast();
+  final _failures = StreamController<Object>.broadcast();
 
   bool get isRunning => _sub != null;
 
@@ -38,10 +39,13 @@ class LocationPublisher {
   Stream<LocationFix> get fixes => _fixes.stream;
   LocationFix? get lastFix => _last;
 
+  /// The position stream failed (GPS off, permission withdrawn) — publishing has stopped.
+  Stream<Object> get failures => _failures.stream;
+
   /// Starts the Android foreground service (notification „Jesteś online”).
   void start() {
     if (_sub != null) return;
-    _sub = _location.watch(driverOnline: true).listen(_onFix);
+    _sub = _location.watch(driverOnline: true).listen(_onFix, onError: _onError);
     _heartbeat = Timer.periodic(heartbeat, (_) => _resend());
     // After a reconnect the server has no fresh position — send the last one at once.
     _states = _socket.states.listen((s) {
@@ -61,6 +65,14 @@ class LocationPublisher {
   Future<void> dispose() async {
     await stop();
     await _fixes.close();
+    await _failures.close();
+  }
+
+  void _onError(Object error) {
+    // Without positions the backend would soon drop the presence anyway; stop the
+    // foreground service at once instead of showing „Jesteś online” for nothing.
+    unawaited(stop());
+    _failures.add(error);
   }
 
   void _onFix(LocationFix fix) {
