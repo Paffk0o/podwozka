@@ -64,3 +64,13 @@ flutter analyze
 (cd apps/passenger && flutter test)
 (cd apps/driver && flutter test)
 ```
+
+### Co sprawdzają testy
+
+Bez prawdziwych pluginów i sieci — mapy, lokalizacja, WebSocket, Keycloak i API są za interfejsami, w testach fake'i. Testy widgetów używają motywu aplikacji (`podwozkaTheme`) i rozmiaru telefonu, żeby łapać błędy układu.
+
+| Pakiet | Logika (jednostkowe) | Ekrany (widgetowe) |
+|---|---|---|
+| `packages/core` | klient WebSocket (auth, ping/pong, backoff 1–30 s, resubskrypcje, `token_expired`, wygasła sesja), parser zdarzeń, `driver.location`, formatowanie zł/czasu/odległości/dat, błędy API po polsku, telefon E.164, dekoder polyline, sesja OIDC | `ProfileGate` + formularz profilu, mapa (znaczniki, atrybucja, tap) |
+| `apps/passenger` | zamawianie (pozycja/pinezka/wyszukiwarka, wycena, nieaktualne odpowiedzi, rezerwacje 30 min–14 dni, wygasła wycena), wyszukiwarka (debounce, token sesji), etapy kursu, kontroler kursu (restart, WS → REST, reconnect, rezerwacja przejmuje ekran, anulowanie, ocena), historia z paginacją | zamawianie z wyceną i „wkrótce” dla karty/BLIK, kurs po restarcie, anulowanie z powodem, szczegóły rezerwacji |
+| `apps/driver` | reguły wniosku, wysyłka dokumentu przez SAS bez tokenu API, etapy kursu i nawigacja, odliczanie oferty, `LocationPublisher` (throttling, heartbeat), kontroler pracy (online, oferta → kurs → gotówka → ocena, anulowanie przez pasażera, reconnect), giełda, okresy zarobków | wniosek, oferta i panel kursu, przełącznik online z wyjaśnieniem, giełda, zarobki, wybór ekranu (wniosek / praca / zawieszony) |
