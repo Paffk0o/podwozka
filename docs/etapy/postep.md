@@ -43,7 +43,7 @@ Pamięć między sesjami agenta. Po każdym zmergowanym PR: odhacz zadanie i dop
 - [x] 6. Kierowca — praca: online (foreground service), oferta 20 s, aktywny kurs + „Nawiguj”, gotówka, ocena pasażera, giełda, zarobki, historia — #48, #49
   - [x] 6a. online (foreground service z powiadomieniem tylko online, uprawnienia z wyjaśnieniem), oferta z odliczaniem 20 s, aktywny kurs z akcjami, „Nawiguj” (Google Maps/Waze), gotówka, ocena pasażera — #48
   - [x] 6b. giełda rezerwacji (przyjęcie, oddanie, odświeżanie po `board.updated`), zarobki (dziś / 7 dni / miesiąc, prowizja z gotówki), historia — #49
-- [ ] 7. Testy: jednostkowe (WebSocket, stany kursu), widgetowe kluczowych ekranów z fake'ami; `dart format`, `flutter analyze` czyste
+- [x] 7. Testy: jednostkowe (WebSocket, stany ekranów kursu, kontrolery) i widgetowe kluczowych ekranów z fake'ami, z motywem aplikacji; `dart format`, `flutter analyze` czyste — core 45, pasażer 33, kierowca 39 (testy powstawały razem z funkcjami w #44–#49, uzupełnienia w #50)
 - [ ] 8. Test akceptacyjny: pełny kurs za gotówkę na dwóch emulatorach, zrzuty w `docs/screenshots/`
 
 ### Koniec etapu
