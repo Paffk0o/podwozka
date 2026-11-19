@@ -47,4 +47,4 @@ Pamięć między sesjami agenta. Po każdym zmergowanym PR: odhacz zadanie i dop
 - [x] 8. Test akceptacyjny: pełny kurs za gotówkę na dwóch emulatorach (API 36), 18 zrzutów i przebieg w `docs/screenshots/README.md`; znaleziony błąd (utrata GPS online → „Jesteś online” bez pozycji) poprawiony w #51 — #52
 
 ### Koniec etapu
-- [ ] Raport dla właściciela (co działa, uruchomienie od zera, znane problemy, etap 3)
+- [x] Raport dla właściciela (co działa, uruchomienie od zera, znane problemy, etap 3) — w rozmowie 19.11.2026
