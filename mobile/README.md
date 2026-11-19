@@ -40,6 +40,11 @@ Oba wyniki commitujemy (to jednorazowa konfiguracja, potem zwykła praca).
    adb reverse tcp:10000 tcp:10000   # Azurite — zdjęcia dokumentów we wniosku kierowcy
    ```
    Pozycję emulatora ustawisz poleceniem `adb emu geo fix 20.0553 49.9837` (Wieliczka, gmina z seeda).
+   Na świeżym emulatorze włącz też *Ustawienia → Lokalizacja → Usługi lokalizacyjne → Dokładność lokalizacji
+   Google*. Bez tej opcji usługi Google zgłaszają lokalizację jako wyłączoną i kierowca nie przejdzie online
+   (aplikacja pokaże „Lokalizacja w telefonie jest wyłączona”). Na prawdziwych telefonach jest zwykle włączona.
+   Dwa urządzenia naraz (test pasażer ↔ kierowca): przy każdym `adb` podawaj `-s emulator-5554` / `-s emulator-5556`,
+   a `adb reverse` ustaw dla każdego osobno. Przebieg testu: [`docs/screenshots/README.md`](../docs/screenshots/README.md).
    **iOS Simulator** widzi `localhost` komputera bez dodatkowych kroków.
 3. Uruchom:
    ```bash

@@ -44,7 +44,7 @@ Pamięć między sesjami agenta. Po każdym zmergowanym PR: odhacz zadanie i dop
   - [x] 6a. online (foreground service z powiadomieniem tylko online, uprawnienia z wyjaśnieniem), oferta z odliczaniem 20 s, aktywny kurs z akcjami, „Nawiguj” (Google Maps/Waze), gotówka, ocena pasażera — #48
   - [x] 6b. giełda rezerwacji (przyjęcie, oddanie, odświeżanie po `board.updated`), zarobki (dziś / 7 dni / miesiąc, prowizja z gotówki), historia — #49
 - [x] 7. Testy: jednostkowe (WebSocket, stany ekranów kursu, kontrolery) i widgetowe kluczowych ekranów z fake'ami, z motywem aplikacji; `dart format`, `flutter analyze` czyste — core 45, pasażer 33, kierowca 39 (testy powstawały razem z funkcjami w #44–#49, uzupełnienia w #50)
-- [ ] 8. Test akceptacyjny: pełny kurs za gotówkę na dwóch emulatorach, zrzuty w `docs/screenshots/`
+- [x] 8. Test akceptacyjny: pełny kurs za gotówkę na dwóch emulatorach (API 36), 18 zrzutów i przebieg w `docs/screenshots/README.md`; znaleziony błąd (utrata GPS online → „Jesteś online” bez pozycji) poprawiony w #51 — #52
 
 ### Koniec etapu
-- [ ] Raport dla właściciela (co działa, uruchomienie od zera, znane problemy, etap 3)
+- [x] Raport dla właściciela (co działa, uruchomienie od zera, znane problemy, etap 3) — w rozmowie 19.11.2026
