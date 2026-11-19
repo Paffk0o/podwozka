@@ -175,6 +175,37 @@ void main() {
       expect(location.watchers, 0);
     });
 
+    test('GPS switched off while online → offline with a Polish reason, service stopped', () async {
+      await start();
+      await controller().goOnline();
+
+      location.fixes.addError(const LocationUnavailableException(LocationAccess.serviceDisabled));
+      await pumpEventQueue();
+
+      expect(repo.calls, ['online:true', 'online:false']);
+      expect(state().online, isFalse);
+      expect(state().locationProblem, contains('Włącz GPS'));
+      expect(container.read(locationPublisherProvider).isRunning, isFalse);
+
+      await controller().goOnline();
+      expect(state().locationProblem, isNull);
+      expect(location.watchers, 2);
+    });
+
+    test('GPS lost during a ride: the driver stays online and is told why', () async {
+      repo
+        ..online = true
+        ..active = aRide(status: RideStatus.driverArriving);
+      await start();
+
+      location.fixes.addError(const LocationUnavailableException(LocationAccess.serviceDisabled));
+      await pumpEventQueue();
+
+      expect(repo.calls, isEmpty);
+      expect(state().online, isTrue);
+      expect(state().locationProblem, isNotNull);
+    });
+
     test(
       'after a restart an online driver is streaming again and the active ride is followed',
       () async {
@@ -316,7 +347,8 @@ void main() {
       expect(find.text('80,35 zł'), findsOneWidget);
       expect(find.textContaining('979 m od Ciebie'), findsOneWidget);
       expect(find.text('Uwagi: Czekam przy fontannie'), findsOneWidget);
-      expect(find.text('20'), findsOneWidget);
+      // Real clock: under load (CI, emulators) a second may pass before the first frame.
+      expect(find.byWidgetPredicate((w) => w is Text && ['19', '20'].contains(w.data)), findsOne);
 
       await tester.tap(find.text('Przyjmij'));
       await tester.pump(const Duration(milliseconds: 300));

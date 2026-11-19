@@ -17,7 +17,12 @@ class GoOnlineException implements Exception {
 }
 
 class WorkState {
-  const WorkState({required this.current, this.finishedRide, this.busy = false});
+  const WorkState({
+    required this.current,
+    this.finishedRide,
+    this.busy = false,
+    this.locationProblem,
+  });
 
   final DriverCurrentState current;
 
@@ -26,18 +31,26 @@ class WorkState {
   final Ride? finishedRide;
   final bool busy;
 
+  /// Why the app went offline by itself (GPS switched off…), Polish; cleared on going online.
+  final String? locationProblem;
+
   bool get online => current.profile.online;
   RideOffer? get offer => current.pendingOffer;
 
   /// The ride the panel is about (active one, or the one being wrapped up).
   Ride? get ride => current.activeRide ?? finishedRide;
 
-  WorkState copyWith({DriverCurrentState? current, Ride? Function()? finishedRide, bool? busy}) =>
-      WorkState(
-        current: current ?? this.current,
-        finishedRide: finishedRide != null ? finishedRide() : this.finishedRide,
-        busy: busy ?? this.busy,
-      );
+  WorkState copyWith({
+    DriverCurrentState? current,
+    Ride? Function()? finishedRide,
+    bool? busy,
+    String? Function()? locationProblem,
+  }) => WorkState(
+    current: current ?? this.current,
+    finishedRide: finishedRide != null ? finishedRide() : this.finishedRide,
+    busy: busy ?? this.busy,
+    locationProblem: locationProblem != null ? locationProblem() : this.locationProblem,
+  );
 }
 
 /// Driver's work loop. Start: REST (`GET /drivers/me/current`) — after a restart the app
@@ -59,9 +72,14 @@ class WorkController extends AsyncNotifier<WorkState> {
       if (connected && !wasConnected) unawaited(refresh().catchError((Object _) {}));
       wasConnected = connected;
     });
+    final failures = ref
+        .watch(locationPublisherProvider)
+        .failures
+        .listen((e) => unawaited(_onLocationFailure(e).catchError((Object _) {})));
     ref.onDispose(() {
       unawaited(events.cancel());
       unawaited(states.cancel());
+      unawaited(failures.cancel());
     });
 
     final current = await repo.current();
@@ -70,7 +88,11 @@ class WorkController extends AsyncNotifier<WorkState> {
       // Back online after a restart: resume streaming the position (permission is kept).
       ref.read(locationPublisherProvider).start();
     }
-    return WorkState(current: current, finishedRide: state.value?.finishedRide);
+    return WorkState(
+      current: current,
+      finishedRide: state.value?.finishedRide,
+      locationProblem: state.value?.locationProblem,
+    );
   }
 
   WorkState get _state => state.requireValue;
@@ -86,7 +108,13 @@ class WorkController extends AsyncNotifier<WorkState> {
       finished = active.copyWith(status: RideStatus.cancelledByPassenger);
     }
     _follow(current.activeRide);
-    state = AsyncData(WorkState(current: current, finishedRide: finished));
+    state = AsyncData(
+      WorkState(
+        current: current,
+        finishedRide: finished,
+        locationProblem: previous?.locationProblem,
+      ),
+    );
   }
 
   /// Location permission + notification permission + `PUT availability` + position stream.
@@ -95,11 +123,26 @@ class WorkController extends AsyncNotifier<WorkState> {
     if (access != LocationAccess.granted) throw GoOnlineException(locationAccessMessage(access));
     // Without it the service still works, only the notification is hidden — not blocking.
     await ref.read(notificationPermissionProvider).ensure();
+    state = AsyncData(_state.copyWith(locationProblem: () => null));
     await _busy(() async {
       await _repo.setOnline(true);
       ref.read(locationPublisherProvider).start();
       await refresh();
     });
+  }
+
+  /// The position stream died while online: no longer pretend to be available for offers.
+  /// During a ride the driver stays online (the ride goes on; the passenger just loses the
+  /// live position) — the message tells them to turn the GPS back on.
+  Future<void> _onLocationFailure(Object error) async {
+    final message = error is LocationUnavailableException
+        ? error.message
+        : 'Nie udało się odczytać lokalizacji telefonu.';
+    state = AsyncData(_state.copyWith(locationProblem: () => message));
+    if (_state.current.activeRide == null && _state.online) {
+      await _repo.setOnline(false);
+    }
+    await refresh();
   }
 
   Future<void> goOffline() => _busy(() async {

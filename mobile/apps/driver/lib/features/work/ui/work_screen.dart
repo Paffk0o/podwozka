@@ -164,6 +164,12 @@ class _IdlePanel extends ConsumerWidget {
           onChanged: state.busy ? null : (value) => _toggle(context, ref, value),
         ),
         if (state.online) const LinearProgressIndicator(),
+        if (state.locationProblem case final problem?)
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Icons.location_off, color: theme.colorScheme.error),
+            title: Text(problem),
+          ),
         if (next != null)
           ListTile(
             contentPadding: EdgeInsets.zero,
