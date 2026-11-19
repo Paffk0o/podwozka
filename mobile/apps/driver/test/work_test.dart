@@ -294,7 +294,10 @@ void main() {
               const MapTilesConfig(urlTemplate: 'about:blank', userAgentPackageName: 'test'),
             ),
           ],
-          child: const MaterialApp(home: Scaffold(body: WorkPanelScreen())),
+          child: MaterialApp(
+            theme: podwozkaTheme(Brightness.light),
+            home: const Scaffold(body: WorkPanelScreen()),
+          ),
         ),
       );
       await tester.pump(const Duration(milliseconds: 300));

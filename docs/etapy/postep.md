@@ -40,9 +40,9 @@ Pamięć między sesjami agenta. Po każdym zmergowanym PR: odhacz zadanie i dop
 - [x] 3. Mapy: flutter_map 8.3.2 + latlong2 0.10.1 + kafelki OSM zamiast google_maps_flutter (zarys + AGENTS.md), `PodwozkaMap` w `core`, dekoder polyline, uprawnienie INTERNET w release — #45
 - [x] 4. Pasażer: skąd/dokąd (GPS, pinezka, wyszukiwarka) → wycena → teraz/później → gotówka (karta/BLIK „wkrótce”) → oczekiwanie → śledzenie z ETA (WS) → podsumowanie i ocena; historia, anulowanie, rezerwacje, powrót do aktywnego kursu po restarcie — #46
 - [x] 5. Kierowca — wniosek: pojazd, gmina, 4 zdjęcia dokumentów (image_picker: aparat/galeria) wysyłane bezpośrednio do Blob Storage linkiem SAS (bez tokenu API), status wniosku, po zatwierdzeniu odświeżenie tokenu i tryb pracy — #47
-- [ ] 6. Kierowca — praca: online (foreground service), oferta 20 s, aktywny kurs + „Nawiguj”, gotówka, ocena pasażera, giełda, zarobki, historia
+- [x] 6. Kierowca — praca: online (foreground service), oferta 20 s, aktywny kurs + „Nawiguj”, gotówka, ocena pasażera, giełda, zarobki, historia — #48, #49
   - [x] 6a. online (foreground service z powiadomieniem tylko online, uprawnienia z wyjaśnieniem), oferta z odliczaniem 20 s, aktywny kurs z akcjami, „Nawiguj” (Google Maps/Waze), gotówka, ocena pasażera — #48
-  - [ ] 6b. giełda rezerwacji, zarobki, historia
+  - [x] 6b. giełda rezerwacji (przyjęcie, oddanie, odświeżanie po `board.updated`), zarobki (dziś / 7 dni / miesiąc, prowizja z gotówki), historia — #49
 - [ ] 7. Testy: jednostkowe (WebSocket, stany kursu), widgetowe kluczowych ekranów z fake'ami; `dart format`, `flutter analyze` czyste
 - [ ] 8. Test akceptacyjny: pełny kurs za gotówkę na dwóch emulatorach, zrzuty w `docs/screenshots/`
 
