@@ -96,7 +96,7 @@ services:
 
   # Azure Storage emulator: driver documents (same code as Azure Blob Storage on staging).
   azurite:
-    image: mcr.microsoft.com/azure-storage/azurite:3.37.0
+    image: mcr.microsoft.com/azure-storage/azurite:3.38.0
     command: ["azurite-blob", "--blobHost", "0.0.0.0", "--blobPort", "10000", "--location", "/data", "--skipApiVersionCheck"]
     ports: ["10000:10000"]
     volumes:
